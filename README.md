@@ -86,7 +86,7 @@ graph TD
 This project utilizes a **Monorepo** structure:
 
 ```text
-LegalGPT-Nepal/
+LegalGPT/
 ├── backend/            # FastAPI Application
 │   ├── app/
 │   │   ├── api/        # REST & WebSocket Routes
@@ -96,7 +96,7 @@ LegalGPT-Nepal/
 │   ├── alembic/        # DB Migrations
 │   └── requirements.txt
 ├── frontend/           # React User Interface
-├── ai_engine/          # Notebooks for Fine-tuning & RAG Pipeline
+├── ai/                 # Notebooks for Fine-tuning & RAG Pipeline
 ├── data/               # Raw and Processed Legal Datasets
 └── docs/               # Project Documentation & Diagrams
 ```
