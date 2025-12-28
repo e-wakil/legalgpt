@@ -1,5 +1,5 @@
 import React from "react";
-import Button from "../ui/Button";
+import {ButtonFill} from "../ui/Button";
 
 const HeroSection: React.FC = () => {
   return (
@@ -26,7 +26,7 @@ const HeroSection: React.FC = () => {
             Learn More
           </button>
 
-          <Button  content='Get Started' className='font-semibold'/>
+           <ButtonFill className="px-8 py-3   text-lg  " content='Start Asking Questions' />
         </div>
       </div>
     </section>

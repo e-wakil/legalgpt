@@ -1,4 +1,8 @@
 @import "tailwindcss";
+::selection {
+  background: #990000; /* your color */
+  color: #ffffff; /* text color */
+}
 
 @theme{
   --default-font-family: 'poppins', sans-serif;
@@ -7,12 +11,10 @@
   --color-primary-light: #2C5282; /* Hover states, secondary buttons */
   --color-primary-dark: #0F2743;  /* Navbars, footers */
   --color-secondary: #4A5568;     /* Icons, outlines, neutral text */
-  --color-background: #F7FAFC;
+  --color-text: #F2F2F2;
   --color-white:#ffffff;
   --color-black:#000000;
   
-  /* Dark mode */
-  --color-darkBg:#202120;         /* Main dark background */
-  --color-darkCard: #161B22;
+
 
 }
