@@ -1,17 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 //icons
 import { Plus, Search, MessageSquare, User, MoreHorizontal } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 //images
 import logo from '../../assets/LegalGPT-Nepal.png'
 import useUserStore from '../../store/userStore';
+import axiosInstance from '../../api/axiosInstance';
 
 
 
 interface Chat {
     id: string;
     title: string;
-    timestamp: Date;
+    created_at: Date;
 }
 interface sidebarProps {
     sidebarOpen: boolean;
@@ -19,13 +20,6 @@ interface sidebarProps {
     chats: Chat[];
     setChats:  React.Dispatch<React.SetStateAction<Chat[]>>;
 }
-// interface User {
-//     id: string;
-//     name: string;
-//     profile: string;
-//     email: string;
-
-// }
 
 const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats}: sidebarProps) => {
     const navigate = useNavigate();
@@ -33,17 +27,14 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats}: sidebar
     //user
     const user= useUserStore(state => state.user)
 
+
     //create new chat
-    const openNewChat = () => {
-        const newChatId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const newChat: Chat = {
-            id: newChatId,
-            title: ' ',
-            timestamp: new Date()
-        }
-        setChats((prev) => [...prev, newChat])
-        // setActiveChatId(newChat.id)
-        navigate(`/chat/${newChat.id}`)
+    const openNewChat = async() => {
+        const response = await axiosInstance.post('/chat/conversations',{
+            title: 'New Chat'
+        })
+        // console.log(response)
+        setChats((prev) => [...prev, response.data])
     }
 
     //filter search chats
@@ -58,7 +49,8 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats}: sidebar
         const allChats: Chat[] = [];
 
         chats.forEach(chat => {
-            const diffTime = now.getTime() - chat.timestamp.getTime();
+            const createdAt = new Date(chat.created_at);
+            const diffTime = now.getTime() - createdAt.getTime();
             const diffDays = diffTime / (1000 * 60 * 60 * 24);
 
             if (diffDays < 1) {
@@ -113,7 +105,7 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats}: sidebar
                     }
 
                     {/* Chat History */}
-                    <div className="flex-1 overflow-y-auto px-2 py-2 space-y-4">
+                    <div className="flex-1 overflow-y-scroll no-scrollbar px-2 py-2 space-y-4">
                         {sidebarOpen ? (
                             <>
                                 {groupedChats.today.length > 0 && (
@@ -191,7 +183,7 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats}: sidebar
                         <button className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-secondary transition">
                             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
                                 {/* <User className="w-5 h-5 text-white" /> */}
-                                <img src={user?.profile} w-5 h-5 />
+                                <img src={user?.profile}  className='w-5 h-5' />
                             </div>
                             {sidebarOpen && (
                                 <>

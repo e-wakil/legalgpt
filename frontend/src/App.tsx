@@ -1,45 +1,38 @@
 import { useEffect } from 'react'
-import {GoogleOAuthProvider} from '@react-oauth/google'
+import {  GoogleOAuthProvider } from '@react-oauth/google'
 import Router from './Routes/Router'
 
 //zustand
 import useUserStore from './store/userStore';
+import axiosInstance from './api/axiosInstance';
 
 function App() {
-  const addUser = useUserStore(state=> state.addUser)
+  const addUser = useUserStore(state => state.addUser)
+  const user = useUserStore(state=> state.user)
+  useEffect(()=>{
     const checkUser = async () => {
-    try {
-      const access_token = localStorage.getItem("userToken");
-        const response = await fetch(
-          "https://www.googleapis.com/oauth2/v3/userinfo",
-          {
-            headers: {
-              Authorization: `Bearer ${access_token}`,
-            },
-          }
-        );
-        const result = await response.json();
-        // console.log(result);
-        addUser({id:result.sub, name:result.name,profile:result.picture, email:result.email})
-    } catch (err) {
-      console.log(err);
-      // navigate('/home')
-
+      try {
+        const response = await axiosInstance.get('/users/me');
+        // console.log(response)
+        const user = response.data;
+        addUser({ id: user.id, name: user.full_name, profile: user.picture_url, email: user.email })
+      }catch(err){
+        console.log('error')
+      }
     }
-  };
-  useEffect(() => {
     checkUser();
-  });
+  },[])
+  // console.log(user)
 
   return (
-    <div>
-      {/* <Router /> */}
-      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-        <Router />
-        </GoogleOAuthProvider>
+        <div>
+          {/* <Router /> */}
+          <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+            <Router />
+          </GoogleOAuthProvider>
 
-    </div>
-  )
-}
+        </div>
+      )
+    }
 
 export default App

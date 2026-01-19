@@ -6,19 +6,25 @@ import { Send, Bot, Menu, } from 'lucide-react';
 import FirstMessageSection from './FIrstMessageSection';
 import MessageSection from './MessageSection';
 //dummy datas
-import testMessages from '../../dummy/testmessages';
+// import testMessages from '../../dummy/testmessages';
+import axiosInstance from '../../api/axiosInstance';
 
+interface Citation {
+    link: string;
+    source: string;
+}
 interface Message {
     id: string;
-    text: string;
-    sender: 'user' | 'bot';
-    timestamp: Date;
+    content: string;
+    role: 'user' | 'assistant';
+    created_at: Date;
     chatId: string;
+    citations: Citation[]
 }
 interface Chat {
     id: string;
     title: string;
-    timestamp: Date;
+    created_at: Date;
 }
 
 interface messageInterfaceProps {
@@ -33,48 +39,47 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
     const { chatId } = useParams<{ chatId: string }>();
 
     useEffect(() => {
-        //function to fetch chat when activeChatId changes:
-        const newMessages = testMessages.filter((test: any) => test.chatId === chatId)
-        if (newMessages[0])
-            setMessages(newMessages[0].messages)
-        else
-            setMessages([])
-
+        const fetchMessages = async () => {
+            const response = await axiosInstance.get(`/chat/${chatId}/messages`)
+            console.log(response.data)
+            setMessages(response.data)
+        }
+        fetchMessages();
     }, [chatId])
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState<boolean>(false);
 
+    // console.log(messages)
 
     //Handle sumbit prompt
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!input.trim()) return;
-
-        const userMessage: Message = {
-            id: Date.now().toString(),
-            text: input,
-            sender: 'user',
-            chatId: chatId || '1',
-            timestamp: new Date()
-        };
-
-        setMessages(prev => [...prev, userMessage]);
-        setInput('');
-        setIsTyping(true);
-        if (messages.length < 1) {
-            setChats((prevChats: Chat[]) =>
-                prevChats.map((chat) => chat.id == chatId ? { ...chat, title: input } : chat)
-            )
-        }
-        setTimeout(() => {
-            const botMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                text: `Thank you for your question regarding "${input}". Based on Nepal's legal framework, I can provide guidance on this matter. According to the relevant provisions in Nepal's Civil Code and Constitution, here are the key points you should know...`,
-                sender: 'bot',
+        try {
+            const userMessage: Message = {
+                id: Date.now().toString(),
+                content: input,
+                role: 'user',
                 chatId: chatId || '1',
-                timestamp: new Date()
+                created_at: new Date(),
+                citations: []
             };
-            setMessages(prev => [...prev, botMessage]);
+            setMessages(prev => [...prev, userMessage]);
+            // setInput('');
+            setIsTyping(true);
+
+        } catch (err) {
+            console.log('error', err)
+        }
+
+        setTimeout(async () => {
+            const response = await axiosInstance.post('/chat/', {
+                message: input,
+                conversation_id: chatId
+            })
+            console.log(response)
+            setMessages(prev => [...prev, response.data.message]);
+            setInput('')
             setIsTyping(false);
         }, 2000);
     };

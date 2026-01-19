@@ -13,9 +13,11 @@ import ButtonFill from '../ui/Button';
 //images
 import logo from '../../assets/LegalGPT-Nepal.png'
 //oauth
-import { useGoogleLogin, googleLogout } from '@react-oauth/google';
+import { googleLogout, GoogleLogin } from '@react-oauth/google';
 //zustand
 import useUserStore from '../../store/userStore';
+import axiosInstance from '../../api/axiosInstance';
+//axiosInstance
 
 interface NavLinkProps {
   to: string;
@@ -37,8 +39,9 @@ const Navbar = () => {
   //import user 
   const user = useUserStore(state => state.user)
   const removeUser = useUserStore(state => state.removeUser)
+  const addUser = useUserStore(state => state.addUser)
 
-  console.log('user: ', user)
+  // console.log('user: ', user)
 
   const navLinks: NavBarProps[] = [
     { to: '/', label: 'Home' },
@@ -67,29 +70,20 @@ const Navbar = () => {
   const toggleMobileDropdown = (label: string) => {
     setActiveMobileDropdown(activeMobileDropdown === label ? null : label);
   };
-  //Google OAuth login
-  const logIn = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      console.log(tokenResponse)
-      try {
-        const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: {
-            Authorization: `Bearer ${tokenResponse.access_token}`
-          }
-        });
-        const userInfo = await response.json();
-        console.log('User Info:', userInfo);
-        localStorage.setItem('userToken', tokenResponse.access_token)
-        navigate('/chat');
-        location.reload();
-      }
-      catch (err) {
-        console.log('Error in fetching data', err)
-      }
-    },
-    //on error login
-    onError: () => console.log("Error logging In")
-  })
+  const logIn = async (credentialResponse: any) => {
+    try {
+      const response = await axiosInstance.post('/auth/google', { token: credentialResponse.credential })
+      // console.log(response)
+      localStorage.setItem('userToken', response.data.access_token)
+      const user = response.data.user;
+      addUser({ id: user.id, name: user.full_name, profile: user.picture_url, email: user.email })
+      navigate('/chat')
+    }
+    catch (err) {
+      console.log('error', err)
+    }
+
+  }
 
   //LOGOUT function
   const logOut = () => {
@@ -166,7 +160,7 @@ const Navbar = () => {
           <div className="hidden lg:flex gap-3 items-center">
             {/* <Link to='login'> */}
             {user?.name ? <ButtonFill content='Logout' onClick={() => logOut()} className='px-6' /> :
-              <ButtonFill content='Login' onClick={logIn} className='px-6' />
+              <GoogleLogin onSuccess={credentialResponse => logIn(credentialResponse)} />
             }
             {/* </Link> */}
           </div>

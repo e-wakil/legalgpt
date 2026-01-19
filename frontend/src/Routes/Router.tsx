@@ -9,7 +9,6 @@ import NotFoundPage from "../pages/NotFoundPage";
 import ChatInterface from "../pages/ChatPage";
 //Protected Routes
 import ProtectedRoutes from "./ProtectedRoutes";
-import MessageInterfaceSection from "../sections/chat/MessageInterfaceSection";
 const Layout = () => {
     return (
         <>
