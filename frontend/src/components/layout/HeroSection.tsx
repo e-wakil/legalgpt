@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {ButtonFill} from "../ui/Button";
 
 const HeroSection: React.FC = () => {
@@ -25,8 +26,9 @@ const HeroSection: React.FC = () => {
           <button className="px-6 py-3 bg-accent cursor-pointer rounded-md font-semibold text-primary-light hover:bg-accent-light transition">
             Learn More
           </button>
-
+          <Link to='/chat'>
            <ButtonFill className="px-8 py-3   text-lg  " content='Start Asking Questions' />
+          </Link>
         </div>
       </div>
     </section>

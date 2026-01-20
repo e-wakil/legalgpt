@@ -6,7 +6,7 @@ import Footer from "../components/layout/Footer";
 //Pages
 import HomePage from "../pages/HomePage";
 import NotFoundPage from "../pages/NotFoundPage";
-import ChatInterface from "../pages/ChatInterfacePage";
+import ChatInterface from "../pages/ChatPage";
 //Protected Routes
 import ProtectedRoutes from "./ProtectedRoutes";
 const Layout = () => {
@@ -34,8 +34,13 @@ function AppRoutes() {
                 <Route path="*" element={<NotFoundPage />} />
                 <Route path="/chat" element={
                     <ProtectedRoutes>
-                    <ChatInterface />
-                </ProtectedRoutes>
+                        <ChatInterface />
+                    </ProtectedRoutes>
+                } />
+                <Route path='/chat/:chatId' element={
+                    <ProtectedRoutes>
+                        <ChatInterface />
+                    </ProtectedRoutes>
                 } />
 
             </Routes>
