@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+venv/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+
+# Database
+*.db
+*.sqlite3
+
+# Docker
+.docker/
+
+# Alembic
+alembic/versions/*.pyc
+
+# OS metadata
+.DS_Store
+Thumbs.db

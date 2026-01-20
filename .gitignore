@@ -88,10 +88,6 @@ postgres_data/
 # adapter_model.bin
 # adapter_config.json
 
-# HuggingFace Cache
-.cache/
-models/
-
 # Datasets (Assume you don't want to push raw legal text files if they are huge)
 data/raw/*
 !data/raw/.gitkeep
