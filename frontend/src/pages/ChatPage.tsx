@@ -22,7 +22,6 @@ const ChatInterface: React.FC = () => {
     useEffect(() => {
         const fetchConversation = async () => {
             const response = await axiosInstance.get('/chat/conversations');
-            console.log(response.data)
             setChats(response.data)
         }
         fetchConversation();

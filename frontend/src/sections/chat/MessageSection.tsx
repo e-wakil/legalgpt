@@ -23,14 +23,14 @@ const MessageSection = ({ messages, isTyping }: MessageSectionProps) => {
   // const createdAt = new Date
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-
   }, [messages])
+  // console.log(messages)
 
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-        {messages.map((message) => (
-          <div key={message.id} className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+        {messages.map((message, index) => (
+          <div key={index} className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {message.role === 'assistant' && (
               <div className="w-8 h-8 rounded-lg bg-primary-dark flex items-center justify-center flex-shrink-0">
                 <Bot className="w-5 h-5 text-white" />

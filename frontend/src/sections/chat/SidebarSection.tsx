@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 //icons
 import { Plus, Search, MessageSquare, User, MoreHorizontal } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 //images
 import logo from '../../assets/LegalGPT-Nepal.png'
 import useUserStore from '../../store/userStore';
@@ -18,22 +18,23 @@ interface sidebarProps {
     sidebarOpen: boolean;
     setSidebarOpen: (value: boolean) => void;
     chats: Chat[];
-    setChats:  React.Dispatch<React.SetStateAction<Chat[]>>;
+    setChats: React.Dispatch<React.SetStateAction<Chat[]>>;
 }
 
-const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats}: sidebarProps) => {
+const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sidebarProps) => {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     //user
-    const user= useUserStore(state => state.user)
+    const user = useUserStore(state => state.user)
 
 
     //create new chat
-    const openNewChat = async() => {
-        const response = await axiosInstance.post('/chat/conversations',{
+    const openNewChat = async () => {
+        const response = await axiosInstance.post('/chat/conversations', {
             title: 'New Chat'
         })
-        // console.log(response)
+        // console.log(response.data)
+        navigate(`/chat/${response.data.id}`)
         setChats((prev) => [...prev, response.data])
     }
 
@@ -113,10 +114,12 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats}: sidebar
                                         <h3 className="text-xs font-semibold text-gray-500 px-3 mb-1">Today</h3>
                                         <div className="space-y-1">
                                             {groupedChats.today.map((chat: Chat) => (
-                                                <div
+                                                <NavLink
                                                     key={chat.id}
-                                                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-secondary transition group flex items-center justify-between"
-                                                    onClick={() => navigate(`/chat/${chat.id}`)}
+                                                    className={({ isActive }) =>
+                                                        `w-full text-left px-3 py-2 rounded-lg hover:bg-secondary transition group flex items-center justify-between ${isActive ? 'bg-secondary' : ''}`
+                                                    }
+                                                    to={`/chat/${chat.id}`}
                                                 >
                                                     <div className="flex items-center gap-3 flex-1 min-w-0">
                                                         <MessageSquare className="w-4 h-4 flex-shrink-0 text-gray-400" />
@@ -125,7 +128,7 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats}: sidebar
                                                     <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-700 rounded transition">
                                                         <MoreHorizontal className="w-4 h-4" />
                                                     </button>
-                                                </div>
+                                                </NavLink>
                                             ))}
                                         </div>
                                     </div>
@@ -136,10 +139,12 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats}: sidebar
                                         <h3 className="text-xs font-semibold text-gray-500 px-3 mb-1">All chats</h3>
                                         <div className="space-y-1">
                                             {groupedChats.allChats.map((chat: Chat) => (
-                                                <div
+                                                <NavLink
                                                     key={chat.id}
-                                                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-secondary transition group flex items-center justify-between"
-                                                    onClick={() => navigate(`/chat/${chat.id}`)}
+                                                    className={({ isActive }) =>
+                                                        `w-full text-left px-3 py-2 rounded-lg hover:bg-secondary transition group flex items-center justify-between ${isActive ? 'bg-secondary' : ''}`
+                                                    }
+                                                    to={`/chat/${chat.id}`}
                                                 >
                                                     <div className="flex items-center gap-3 flex-1 min-w-0">
                                                         <MessageSquare className="w-4 h-4 flex-shrink-0 text-gray-400" />
@@ -148,7 +153,7 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats}: sidebar
                                                     <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-700 rounded transition">
                                                         <MoreHorizontal className="w-4 h-4" />
                                                     </button>
-                                                </div>
+                                                </NavLink>
                                             ))}
                                         </div>
                                     </div>
@@ -183,7 +188,7 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats}: sidebar
                         <button className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-secondary transition">
                             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
                                 {/* <User className="w-5 h-5 text-white" /> */}
-                                <img src={user?.profile}  className='w-5 h-5' />
+                                <img src={user?.profile} className='w-5 h-5' />
                             </div>
                             {sidebarOpen && (
                                 <>
