@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate, useParams } from 'react-router-dom';
 //icons
 import { Send, Bot, Menu, } from 'lucide-react';
 //sections
@@ -37,11 +37,18 @@ interface messageInterfaceProps {
 
 const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: messageInterfaceProps) => {
     const { chatId } = useParams<{ chatId: string }>();
+    const navigate = useNavigate();
+    const inputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
+        inputRef.current?.focus();
+
+        // RETURN SELECT CHAT PAGE
+        if (!chatId) return;
+
         const fetchMessages = async () => {
             const response = await axiosInstance.get(`/chat/${chatId}/messages`)
-            console.log(response.data)
+            // console.log(response.data)
             setMessages(response.data)
         }
         fetchMessages();
@@ -65,7 +72,7 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
                 citations: []
             };
             setMessages(prev => [...prev, userMessage]);
-            // setInput('');
+            // console.log(userMessage)
             setIsTyping(true);
 
         } catch (err) {
@@ -78,6 +85,8 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
                 conversation_id: chatId
             })
             console.log(response)
+            navigate(`/chat/${response.data.conversation_id}`)
+            setChats(prev => [...prev, { id: response.data.conversation_id, title: input, created_at: new Date(Date.now()) }])
             setMessages(prev => [...prev, response.data.message]);
             setInput('')
             setIsTyping(false);
@@ -121,6 +130,7 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
                         <div className="flex-1 bg-gray-50 rounded-3xl border border-gray-200 focus-within:border-primary focus-within:shadow-sm transition">
                             <input
                                 type="text"
+                                ref={inputRef}
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
