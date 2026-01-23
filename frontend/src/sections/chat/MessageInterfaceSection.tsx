@@ -86,7 +86,7 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
             })
             console.log(response)
             navigate(`/chat/${response.data.conversation_id}`)
-            setChats(prev => [...prev, { id: response.data.conversation_id, title: input, created_at: new Date(Date.now()) }])
+            // setChats(prev => [...prev, { id: response.data.conversation_id, title: input, created_at: new Date(Date.now()) }])
             setMessages(prev => [...prev, response.data.message]);
             setInput('')
             setIsTyping(false);

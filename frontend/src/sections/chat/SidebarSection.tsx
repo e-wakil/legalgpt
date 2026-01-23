@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react'
-//icons
-import { Plus, Search, MessageSquare, User, MoreHorizontal } from 'lucide-react';
+import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom';
+//icons
+import { Plus, Search, MessageSquare, MoreHorizontal } from 'lucide-react';
+import { BsPinFill } from "react-icons/bs";
+import { FaPen } from "react-icons/fa";
+import { RiDeleteBin6Fill } from "react-icons/ri";
+
 //images
 import logo from '../../assets/LegalGPT-Nepal.png'
 import useUserStore from '../../store/userStore';
 import axiosInstance from '../../api/axiosInstance';
 
-
+import Popup from 'reactjs-popup'
 
 interface Chat {
     id: string;
@@ -24,6 +28,7 @@ interface sidebarProps {
 const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sidebarProps) => {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
+    const [openChatPopUp, setOpenChatPopUp] = useState<boolean>(false)
     //user
     const user = useUserStore(state => state.user)
 
@@ -67,6 +72,7 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sideba
 
     return (
         <>
+
             {/* Sidebar */}
             < div className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-primary-dark text-text h-full transition-all duration-300 flex flex-col`
             }>
@@ -114,21 +120,69 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sideba
                                         <h3 className="text-xs font-semibold text-gray-500 px-3 mb-1">Today</h3>
                                         <div className="space-y-1">
                                             {groupedChats.today.map((chat: Chat) => (
-                                                <NavLink
-                                                    key={chat.id}
-                                                    className={({ isActive }) =>
-                                                        `w-full text-left px-3 py-2 rounded-lg hover:bg-secondary transition group flex items-center justify-between ${isActive ? 'bg-secondary' : ''}`
-                                                    }
-                                                    to={`/chat/${chat.id}`}
-                                                >
-                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                        <MessageSquare className="w-4 h-4 flex-shrink-0 text-gray-400" />
-                                                        <span className="text-sm truncate">{chat.title}</span>
+                                                <div key={chat.id} className="relative group">
+                                                    <NavLink
+                                                        className={({ isActive }) =>
+                                                            `w-full text-left px-3 py-2 rounded-lg hover:bg-secondary transition flex items-center justify-between ${isActive ? 'bg-secondary' : ''
+                                                            }`
+                                                        }
+                                                        to={`/chat/${chat.id}`}
+                                                    >
+                                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                            <MessageSquare className="w-4 h-4 flex-shrink-0 text-gray-400" />
+                                                            <span className="text-sm truncate">{chat.title}</span>
+                                                        </div>
+                                                        <div className="w-6 h-6"></div> {/* Spacer for the menu button */}
+                                                    </NavLink>
+
+                                                    {/* Popup Trigger - Outside NavLink */}
+                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                                        <Popup
+                                                            trigger={
+                                                                <button
+                                                                    type="button"
+                                                                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-700 rounded transition"
+                                                                >
+                                                                    <MoreHorizontal className="w-4 h-4" />
+                                                                </button>
+                                                            }
+                                                            position='right top'
+                                                            closeOnDocumentClick
+                                                            arrow={false}
+                                                            contentStyle={{
+                                                                background: '#1f2937',
+                                                                border: 'none',
+                                                                borderRadius: '8px',
+                                                                padding: '0',
+                                                                zIndex: 1000,
+                                                            }}
+                                                        >
+                                                            <div className="bg-primary/50 rounded-lg shadow-xl p-2 min-w-[150px]">
+                                                                <button
+                                                                    type="button"
+                                                                    // onClick={() => handleRename(chat.id)}
+                                                                    className="w-full text-left px-1 py-2 hover:bg-gray-700 rounded text-sm text-white flex items-center gap-2 "
+                                                                >
+                                                                    <BsPinFill className='text-md' />Pin
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    // onClick={() => handleRename(chat.id)}
+                                                                    className="w-full text-left px-1 py-2 hover:bg-gray-700 rounded text-sm text-white flex items-center gap-2 "
+                                                                >
+                                                                    <FaPen className='text-md' />Rename
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    // onClick={() => handleDelete(chat.id)}
+                                                                    className="w-full text-left px-1 py-2 hover:bg-gray-700 rounded text-sm text-red-400 flex items-center gap-2 "
+                                                                >
+                                                                    <RiDeleteBin6Fill className='text-md' />Delete
+                                                                </button>
+                                                            </div>
+                                                        </Popup>
                                                     </div>
-                                                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-700 rounded transition">
-                                                        <MoreHorizontal className="w-4 h-4" />
-                                                    </button>
-                                                </NavLink>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
@@ -139,21 +193,70 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sideba
                                         <h3 className="text-xs font-semibold text-gray-500 px-3 mb-1">All chats</h3>
                                         <div className="space-y-1">
                                             {groupedChats.allChats.map((chat: Chat) => (
-                                                <NavLink
-                                                    key={chat.id}
-                                                    className={({ isActive }) =>
-                                                        `w-full text-left px-3 py-2 rounded-lg hover:bg-secondary transition group flex items-center justify-between ${isActive ? 'bg-secondary' : ''}`
-                                                    }
-                                                    to={`/chat/${chat.id}`}
-                                                >
-                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                        <MessageSquare className="w-4 h-4 flex-shrink-0 text-gray-400" />
-                                                        <span className="text-sm truncate">{chat.title}</span>
+                                                <div key={chat.id} className="relative group">
+                                                    <NavLink
+                                                        className={({ isActive }) =>
+                                                            `w-full text-left px-3 py-2 rounded-lg hover:bg-secondary transition flex items-center justify-between ${isActive ? 'bg-secondary' : ''
+                                                            }`
+                                                        }
+                                                        to={`/chat/${chat.id}`}
+                                                    >
+                                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                            <MessageSquare className="w-4 h-4 flex-shrink-0 text-gray-400" />
+                                                            <span className="text-sm truncate">{chat.title}</span>
+                                                        </div>
+                                                        <div className="w-6 h-6"></div> {/* Spacer for the menu button */}
+                                                    </NavLink>
+
+                                                    {/* Popup Trigger - Outside NavLink */}
+                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                                        <Popup
+                                                            trigger={
+                                                                <button
+                                                                    type="button"
+                                                                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-700 rounded transition"
+                                                                >
+                                                                    <MoreHorizontal className="w-4 h-4" />
+                                                                </button>
+                                                            }
+                                                            position="right top"
+                                                            closeOnDocumentClick
+                                                            arrow={false}
+                                                            contentStyle={{
+                                                                background: '#1f2937',
+                                                                border: 'none',
+                                                                borderRadius: '8px',
+                                                                padding: '0',
+                                                                zIndex: 1000,
+                                                            }}
+                                                        >
+                                                            <div className="bg-primary/50 rounded-lg shadow-xl p-2 min-w-[150px]">
+                                                                <button
+                                                                    type="button"
+                                                                    // onClick={() => handleRename(chat.id)}
+                                                                    className="w-full text-left px-1 py-2 hover:bg-gray-700 rounded text-sm text-white flex items-center gap-2 "
+                                                                >
+                                                                    <BsPinFill className='text-md' />Pin
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    // onClick={() => handleRename(chat.id)}
+                                                                    className="w-full text-left px-1 py-2 hover:bg-gray-700 rounded text-sm text-white flex items-center gap-2 "
+                                                                >
+                                                                    <FaPen className='text-md' />Rename
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    // onClick={() => handleDelete(chat.id)}
+                                                                    className="w-full text-left px-1 py-2 hover:bg-gray-700 rounded text-sm text-red-400 flex items-center gap-2 "
+                                                                >
+                                                                    <RiDeleteBin6Fill className='text-md' />Delete
+                                                                </button>
+                                                            </div>
+                                                        </Popup>
                                                     </div>
-                                                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-700 rounded transition">
-                                                        <MoreHorizontal className="w-4 h-4" />
-                                                    </button>
-                                                </NavLink>
+                                                </div>
+
                                             ))}
                                         </div>
                                     </div>
@@ -182,6 +285,7 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sideba
                             </div>
                         )}
                     </div>
+
 
                     {/* Profile Section at Bottom */}
                     <div className="border-t border-gray-800 p-2">
