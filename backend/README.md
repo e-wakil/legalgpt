@@ -1,10 +1,11 @@
 # LegalGPT Backend ⚖️🤖
 
-A professional ChatGPT-style backend for legal consultation, built with FastAPI, PostgreSQL, and Google OAuth.
+A professional ChatGPT-style backend for legal consultation for nepali law, built with FastAPI, PostgreSQL (pgvector), and Google OAuth.
 
 ## 🚀 Features
 - **FastAPI** for high-performance REST API.
-- **PostgreSQL** running in Docker for reliable data storage.
+- **PostgreSQL with pgvector** for reliable data and high-speed vector storage.
+- **RAG (Retrieval-Augmented Generation)** to provide context-aware legal advice based on local PDFs.
 - **Alembic** for smooth database migrations.
 - **Google OAuth2** authentication.
 - **Enterprise Structure** with clear separation of models, services, and endpoints.
@@ -43,27 +44,35 @@ ACCESS_TOKEN_EXPIRE_MINUTES=300
 AI_INFERENCE_URL=http://127.0.0.1:8001/ask
 ```
 
-### 3. Start the Database (Docker)
-Ensure Docker is running, then start the PostgreSQL container:
+### 3. Start the Vector Database (Docker)
+Ensure Docker is running. The project uses the `ankane/pgvector` image to support RAG:
 ```bash
 docker-compose up -d
 ```
 
 ### 4. Database Migrations (Alembic)
-Apply the database schema to your PostgreSQL instance:
+Apply the database schema (Users, Conversations, Messages):
 ```bash
-# Set PYTHONPATH so Alembic can find the 'app' module
 export PYTHONPATH=$PYTHONPATH:. 
-
-# Run migrations
 alembic upgrade head
+```
+
+### 5. RAG Setup: Ingesting Legal Documents
+To provide the AI with specific legal knowledge, you must ingest your PDF documents into the vector database.
+
+1.  **Place your PDFs:** Copy all legal documents (e.g., Nepalese Acts) into the `backend/data/laws/` directory.
+2.  **Run Ingestion:** Execute the script to split, embed, and store the documents:
+```bash
+export PYTHONPATH=$PYTHONPATH:. 
+python3 scripts/ingest_docs.py
 ```
 
 ---
 
 ## 🏃 Running the Application
 
-Start the FastAPI server:
+1. **Start the AI Worker:** Ensure your AI Worker (on port 8001) is running.
+2. **Start the Backend:**
 ```bash
 uvicorn app.main:app --reload
 ```
@@ -82,20 +91,27 @@ backend/
 │   ├── core/           # Security, Config & DB Setup
 │   ├── models/         # SQLAlchemy Tables
 │   ├── schemas/        # Pydantic (Data Validation)
-│   ├── services/       # AI & RAG Logic
+│   ├── services/       # AI & RAG Logic (rag_service.py)
 │   ├── admin/          # SQLAdmin UI Configuration
 │   └── main.py         # App Initialization
+├── scripts/            # Admin scripts (ingest_docs.py)
+├── data/
+│   └── laws/           # Source PDFs for RAG
 ├── alembic/            # Database Migrations
-├── alembic.ini         # Database Migrations
 ├── .env                # Private Secrets
-├── docker-compose.yml  # Infrastructure
-├── README.md           # Readme of backend
+├── docker-compose.yml  # Infrastructure (pgvector)
 └── requirements.txt    # Dependencies
 ```
 
 ---
 
 ## 🛠️ Useful Commands
+
+### Update RAG Knowledge Base
+Whenever you add new PDFs to `data/laws/`, re-run:
+```bash
+python3 scripts/ingest_docs.py
+```
 
 ### Create a new database migration
 If you modify `models.py`, run:
@@ -107,5 +123,5 @@ alembic upgrade head
 
 ### View Docker DB Logs
 ```bash
-docker logs -f legalgpt-db
+docker logs -f legalgpt_postgres
 ```

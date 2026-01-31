@@ -2,7 +2,8 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:15
+    # Use the pgvector image instead of standard postgres
+    image: ankane/pgvector:v0.5.1
     container_name: legalgpt_postgres
     restart: always
     environment:
