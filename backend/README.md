@@ -40,6 +40,7 @@ GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 JWT_SECRET=generate-a-long-random-string-here
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=300
+AI_INFERENCE_URL=http://127.0.0.1:8001/ask
 ```
 
 ### 3. Start the Database (Docker)
@@ -85,8 +86,10 @@ backend/
 │   ├── admin/          # SQLAdmin UI Configuration
 │   └── main.py         # App Initialization
 ├── alembic/            # Database Migrations
+├── alembic.ini         # Database Migrations
 ├── .env                # Private Secrets
 ├── docker-compose.yml  # Infrastructure
+├── README.md           # Readme of backend
 └── requirements.txt    # Dependencies
 ```
 
