@@ -1,9 +1,13 @@
+import useUserStore from "../../store/userStore";
+
+
 const FIrstMessageSection = () => {
+  const { user } = useUserStore();
   return (
     <div className="flex flex-col items-center justify-center h-full py-16">
       <div className="text-center space-y-4">
         <h1 className="text-4xl md:text-5xl font-bold text-black">
-          Hello <span className="text-primary">Rajat</span>,
+          Hello <span className="text-primary">{user?.name}</span>,
         </h1>
         <p className="text-xl md:text-2xl ">
           What do you want to know today?

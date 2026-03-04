@@ -6,6 +6,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import logo from '../../assets/LegalGPT-Nepal.png'
 import useUserStore from '../../store/userStore';
 import axiosInstance from '../../api/axiosInstance';
+import Conversation from '../../components/ui/Conversation';
 
 
 
@@ -65,6 +66,18 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sideba
     };
     const groupedChats = groupChatsByDate(filteredChats);
 
+    const onRenameClicked = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+        // Implement rename logic here, e.g., open a modal to enter new name
+        console.log("Rename clicked");
+    };
+    
+     const onDeleteClicked = (event: React.MouseEvent<HTMLButtonElement>, chatId: string) => {
+        event.preventDefault();
+        // Implement delete logic here, e.g., show confirmation and call API to delete
+        console.log("Delete clicked");
+    };
+
     return (
         <>
             {/* Sidebar */}
@@ -114,21 +127,7 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sideba
                                         <h3 className="text-xs font-semibold text-gray-500 px-3 mb-1">Today</h3>
                                         <div className="space-y-1">
                                             {groupedChats.today.map((chat: Chat) => (
-                                                <NavLink
-                                                    key={chat.id}
-                                                    className={({ isActive }) =>
-                                                        `w-full text-left px-3 py-2 rounded-lg hover:bg-secondary transition group flex items-center justify-between ${isActive ? 'bg-secondary' : ''}`
-                                                    }
-                                                    to={`/chat/${chat.id}`}
-                                                >
-                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                        <MessageSquare className="w-4 h-4 flex-shrink-0 text-gray-400" />
-                                                        <span className="text-sm truncate">{chat.title}</span>
-                                                    </div>
-                                                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-700 rounded transition">
-                                                        <MoreHorizontal className="w-4 h-4" />
-                                                    </button>
-                                                </NavLink>
+                                                <Conversation key={chat.id} chat={chat} onRenameClicked={onRenameClicked} onDeleteClicked={onDeleteClicked} />
                                             ))}
                                         </div>
                                     </div>
@@ -139,21 +138,7 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sideba
                                         <h3 className="text-xs font-semibold text-gray-500 px-3 mb-1">All chats</h3>
                                         <div className="space-y-1">
                                             {groupedChats.allChats.map((chat: Chat) => (
-                                                <NavLink
-                                                    key={chat.id}
-                                                    className={({ isActive }) =>
-                                                        `w-full text-left px-3 py-2 rounded-lg hover:bg-secondary transition group flex items-center justify-between ${isActive ? 'bg-secondary' : ''}`
-                                                    }
-                                                    to={`/chat/${chat.id}`}
-                                                >
-                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                        <MessageSquare className="w-4 h-4 flex-shrink-0 text-gray-400" />
-                                                        <span className="text-sm truncate">{chat.title}</span>
-                                                    </div>
-                                                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-700 rounded transition">
-                                                        <MoreHorizontal className="w-4 h-4" />
-                                                    </button>
-                                                </NavLink>
+                                               <Conversation key={chat.id} chat={chat} onRenameClicked={onRenameClicked} onDeleteClicked={onDeleteClicked} />
                                             ))}
                                         </div>
                                     </div>
@@ -168,7 +153,7 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sideba
                                     onClick={() => setSidebarOpen(true)}>
                                     <Search className='"w-5 h-5 text-gray-400' />
                                 </div>
-                                {[...groupedChats.today, ...groupedChats.allChats].slice(0, 8).map((chat) => (
+                                {[...groupedChats.today, ...groupedChats.allChats].map((chat) => (
 
                                     <button
                                         key={chat.id}

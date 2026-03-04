@@ -170,14 +170,19 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
                                 ref={inputRef}
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSend();
+                                    }
+                                }}
                                 placeholder="Ask about Nepal's laws..."
                                 className="w-full px-5 py-3 bg-transparent focus:outline-none"
                             />
                         </div>
                         <button
                             onClick={handleSend}
-                            disabled={!input.trim() || (chatId && !isConnected)}
+                            disabled={!input.trim() || (!!chatId && !isConnected)}
                             className={`p-3 rounded-full ${input.trim() ? 'bg-primary-dark text-white' : 'bg-gray-200 text-gray-400'}`}
                         >
                             <Send className="w-5 h-5" />
