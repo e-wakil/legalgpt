@@ -91,7 +91,6 @@ const Navbar = () => {
     localStorage.removeItem('userToken')
     removeUser();
     location.reload()
-
   }
 
   return (

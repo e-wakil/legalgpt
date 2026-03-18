@@ -1,33 +1,37 @@
-const FIrstMessageSection = () => {
+import useUserStore from '../../store/userStore';
+
+interface FirstMessageProps {
+  setInput: (val: string) => void;
+}
+
+const FIrstMessageSection = ({ setInput }: FirstMessageProps) => {
+  const user = useUserStore(state => state.user)
+  const suggestions = [
+    { label: "Property Dispute", desc: "Ask about land ownership issues", query: "Tell me about Property Disputes" },
+    { label: "Business Registration", desc: "Learn about registration process", query: "How do I register a business?" },
+    { label: "Labor Rights", desc: "Employee rights and regulations", query: "What are my labor rights?" },
+    { label: "Legal Documents", desc: "Help with legal documentation", query: "How do I draft legal documents?" },
+  ];
   return (
     <div className="flex flex-col items-center justify-center h-full py-16">
       <div className="text-center space-y-4">
         <h1 className="text-4xl md:text-5xl font-bold text-black">
-          Hello <span className="text-primary">Rajat</span>,
+          Hello <span className="text-primary">{user?.name}</span>,
         </h1>
-        <p className="text-xl md:text-2xl ">
-          What do you want to know today?
-        </p>
+        <p className="text-xl md:text-2xl">What do you want to know today?</p>
       </div>
-      
-      {/* Optional: Add some quick prompt suggestions */}
+
       <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
-        <button className="bg-black/10 hover:bg-black/20 transition p-4 rounded-xl text-left border border-black/20">
-          <p className="text-black font-medium">Property Dispute</p>
-          <p className=" text-sm mt-1">Ask about land ownership issues</p>
-        </button>
-        <button className="bg-black/10 hover:bg-black/20 transition p-4 rounded-xl text-left border border-black/20">
-          <p className="text-black font-medium">Business Registration</p>
-          <p className=" text-sm mt-1">Learn about registration process</p>
-        </button>
-        <button className="bg-black/10 hover:bg-black/20 transition p-4 rounded-xl text-left border border-black/20">
-          <p className="text-black font-medium">Labor Rights</p>
-          <p className=" text-sm mt-1">Employee rights and regulations</p>
-        </button>
-        <button className="bg-black/10 hover:bg-black/20 transition p-4 rounded-xl text-left border border-black/20">
-          <p className="text-black font-medium">Legal Documents</p>
-          <p className=" text-sm mt-1">Help with legal documentation</p>
-        </button>
+        {suggestions.map((item, index) => (
+          <button
+            key={index}
+            className="bg-black/10 hover:bg-black/20 transition p-4 rounded-xl text-left border border-black/20"
+            onClick={() => setInput(item.query)} // Corrected handler
+          >
+            <p className="text-black font-medium">{item.label}</p>
+            <p className="text-sm mt-1">{item.desc}</p>
+          </button>
+        ))}
       </div>
     </div>
   )

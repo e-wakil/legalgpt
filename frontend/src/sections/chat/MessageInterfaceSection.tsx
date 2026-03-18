@@ -158,7 +158,7 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
             {messages.length > 0 ? (
                 <MessageSection messages={messages} isTyping={isTyping} />
             ) : (
-                <FirstMessageSection />
+                <FirstMessageSection setInput={setInput} />
             )}
 
             <div className="border-t border-gray-200 bg-white px-4 pt-4 pb-2">
