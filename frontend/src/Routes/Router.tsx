@@ -9,6 +9,10 @@ import NotFoundPage from "../pages/NotFoundPage";
 import ChatInterface from "../pages/ChatPage";
 //Protected Routes
 import ProtectedRoutes from "./ProtectedRoutes";
+import FeaturesPage from "../pages/FeaturesPage";
+import DocsPage from "../pages/DocsPage";
+import AboutPage from "../pages/AboutPage";
+import ContactPage from "../pages/ContactPage";
 const Layout = () => {
     return (
         <>
@@ -29,6 +33,13 @@ function AppRoutes() {
                 <Route element={<Layout />}>
                     {/* Routes with Navbar and Footer */}
                     <Route path="/" element={<HomePage />} />
+                    <Route path='/features' element={<FeaturesPage />} />
+                    <Route path='/docs' element={<DocsPage />} />
+                    <Route path='/about' element={<AboutPage />} />
+                    <Route path='/contact' element={<ContactPage />} />
+
+
+
                 </Route>
                 {/* Routes without Navbar and Footer */}
                 <Route path="*" element={<NotFoundPage />} />

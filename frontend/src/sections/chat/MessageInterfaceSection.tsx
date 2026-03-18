@@ -115,12 +115,20 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
                 </div>
             </div>
 
+<<<<<<< HEAD
             {/* Messages Area */}
             {
                 messages.length > 0 ? <MessageSection messages={messages} isTyping={isTyping} />
                     :
                     <FirstMessageSection />
             }
+=======
+            {messages.length > 0 ? (
+                <MessageSection messages={messages} isTyping={isTyping} />
+            ) : (
+                <FirstMessageSection setInput={setInput} />
+            )}
+>>>>>>> 4ab5a8a (home pages + chat delte logout rename implementation)
 
 
             {/* Input Area */}
