@@ -99,7 +99,7 @@ const Navbar = () => {
         <div className="mx-4 sm:mx-8 md:mx-12 lg:mx-16 xl:mx-65 flex h-full justify-between items-center">
 
           {/* Logo */}
-          <div className='flex items-center space-x-2'>
+          <div className='flex items-center space-x-2 cursor-pointer' onClick={()=> navigate('/')}>
             <img src={logo} alt="LegalGPT Nepal Logo" className='h-10 w-10 md:h-12 md:w-12 rounded-full' />
             <span className='text-white font-bold text-lg md:text-xl'>
               LegalGPT-Nepal
@@ -157,11 +157,9 @@ const Navbar = () => {
 
           {/* Desktop Buttons */}
           <div className="hidden lg:flex gap-3 items-center">
-            {/* <Link to='login'> */}
             {user?.name ? <ButtonFill content='Logout' onClick={() => logOut()} className='px-6' /> :
               <GoogleLogin onSuccess={credentialResponse => logIn(credentialResponse)} />
             }
-            {/* </Link> */}
           </div>
 
           {/* Mobile/Tablet Menu Button */}
@@ -189,7 +187,7 @@ const Navbar = () => {
 
       {/* Mobile Sidebar */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-primary-dark shadow-2xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto ${isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed top-0 right-0 h-full w-72 bg-primary-dark shadow-2xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto ${isOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
       >
         {/* Sidebar Header */}
@@ -208,7 +206,7 @@ const Navbar = () => {
         </div>
 
         {/* Sidebar Navigation Links */}
-        <div className="flex flex-col p-6 space-y-2 pb-32">
+        <div className="flex flex-col p-6 space-y-2 pb-32 ">
           {navLinks.map((link) => (
             <motion.div
               key={link.label}
@@ -220,7 +218,7 @@ const Navbar = () => {
                   {/* Expandable Dropdown */}
                   <button
                     onClick={() => toggleMobileDropdown(link.label)}
-                    className="w-full flex items-center justify-between text-text hover:text-secondary  transition-all duration-200 px-4 py-3 rounded-lg text-base font-medium"
+                    className="w-full flex items-center  justify-between text-text hover:text-secondary  transition-all duration-200 px-4 py-3 rounded-lg text-base font-medium"
                   >
                     <span>{link.label}</span>
                     <IoChevronDown
@@ -249,7 +247,7 @@ const Navbar = () => {
                 <Link
                   to={link.to}
                   onClick={closeSidebar}
-                  className="block text-text hover:text-secondary  transition-all duration-200 px-4 py-3 rounded-lg text-base font-medium"
+                  className="block text-text  hover:text-secondary  transition-all duration-200 px-4 py-3 rounded-lg text-base font-medium"
                 >
                   {link.label}
                 </Link>
@@ -260,12 +258,17 @@ const Navbar = () => {
 
         {/* Sidebar Buttons */}
         <div className="absolute bottom-0 left-0 right-0 p-6  ">
-          <Link to='signup'>
+          {/* <Link to='signup'>
             <ButtonFill content='Signup' className='w-full text-center mb-4' onClick={closeSidebar} />
           </Link>
           <Link to='login'>
             <ButtonFill content='Login' className='w-full text-center' onClick={closeSidebar} />
-          </Link>
+          </Link> */}
+          <div className=" flex justify-center items-center">
+            {user?.name ? <ButtonFill content='Logout' onClick={() => logOut()} className='w-full text-center' /> :
+              <GoogleLogin onSuccess={credentialResponse => logIn(credentialResponse)} />
+            }
+          </div>
         </div>
       </div>
     </>

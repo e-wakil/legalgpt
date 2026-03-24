@@ -13,8 +13,6 @@ import { HiFlag } from "react-icons/hi";
 
 export default function LegalGPTHome() {
   const [showLimitations, setShowLimitations] = useState(false);
-  const [showHowToUse, setShowHowToUse] = useState(false);
-  const [showAccuracy, setShowAccuracy] = useState(false);
   const [showLanguage, setShowLanguage] = useState(false);
   const [showFree, setShowFree] = useState(false);
   const [showLawyer, setShowLawyer] = useState(false);
@@ -101,7 +99,7 @@ export default function LegalGPTHome() {
           Everything you need to know before getting started with LegalGPT.
         </p>
 
-        <div className="space-y-3 px-20 flex flex-col justify-center ">
+        <div className="space-y-3 xl:px-10  flex flex-col justify-center ">
           <ToggleCard
             title="What are the limitations of LegalGPT?"
             isOpen={showLimitations}
