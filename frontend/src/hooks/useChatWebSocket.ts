@@ -14,6 +14,7 @@ export const useChatWebSocket = ({ chatId, onMessageReceived, onStreamStart, onS
     const fullContentRef = useRef("");
 
     useEffect(() => {
+        // console.log("chatID:", chatId)
         if (!chatId) return;
 
         const token = localStorage.getItem('userToken');
@@ -54,9 +55,10 @@ export const useChatWebSocket = ({ chatId, onMessageReceived, onStreamStart, onS
         };
     }, [chatId]);
 
-    const sendMessage = useCallback((message: string) => {
-        if (socketRef.current && isConnected) {
-            socketRef.current.send(JSON.stringify({ message }));
+    const sendMessage = useCallback((message: string, selectedModel :string) => {
+        console.log(selectedModel)
+        if (socketRef.current) {
+            socketRef.current.send(JSON.stringify({ message, selectedModel }));
         } else {
             console.error("Socket not connected");
         }
