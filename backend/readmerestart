@@ -1,6 +1,0 @@
-# Stop everything
-docker compose down
-
-# Start again next time
-docker compose up -d
-uvicorn app.main:app --reload

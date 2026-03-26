@@ -1,20 +1,119 @@
-# Python
-venv/
-__pycache__/
-*.pyc
-*.pyo
+# ==========================
+# GLOBAL / OS / IDE
+# ==========================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ==========================
+# SECRETS & ENV VARIABLES
+# ==========================
+# CRITICAL: Never push these files!
 .env
-
-# Node
-node_modules/
-dist/
 .env.local
+.env.*.local
+*.pem
+*.key
+secrets.json
 
-# Model files (too large for git)
-*.gguf
+# ==========================
+# PYTHON (Backend & AI)
+# ==========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# Testing & Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# FastAPI / Database specific
+*.sqlite3
+*.db
+alembic.ini  # Keep this if you want to share config, Ignore if it has passwords
+# If using local docker volumes for DB
+postgres_data/
+
+# ==========================
+# JUPYTER NOTEBOOKS (AI)
+# ==========================
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+# Optional: Ignore output of notebooks to keep diffs clean
+# *.ipynb
+
+# ==========================
+# AI MODEL ARTIFACTS
+# ==========================
+# Ignore large model weights (GBs in size)
 *.bin
 *.pt
+*.pth
+*.ckpt
 *.safetensors
+*.onnx
+*.gguf
 
-# OS
-.DS_Store
+# Lora Adapters (If you want to keep them local until release)
+# adapter_model.bin
+# adapter_config.json
+
+# Datasets (Assume you don't want to push raw legal text files if they are huge)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# ==========================
+# FRONTEND (React/Node)
+# ==========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Vite / Build Output
+dist/
+dist-ssr/
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs
+*.njsproj
+*.sln
+*.sw?

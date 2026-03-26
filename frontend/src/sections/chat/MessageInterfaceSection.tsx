@@ -1,9 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
-import { Send, Bot, Menu } from 'lucide-react';
+//icons
+import { Send, Bot, Menu, } from 'lucide-react';
+//sections
 import FirstMessageSection from './FIrstMessageSection';
 import MessageSection from './MessageSection';
+//dummy datas
+// import testMessages from '../../dummy/testmessages';
 import axiosInstance from '../../api/axiosInstance';
+import { useChatWebSocket } from '../../hooks/useChatWebSocket'; // Import the hook
+
 
 interface Citation {
     link: string;
@@ -22,6 +28,7 @@ interface Chat {
     title: string;
     created_at: Date;
 }
+
 interface messageInterfaceProps {
     sidebarOpen: boolean | true;
     setSidebarOpen: (value: boolean) => void;
@@ -29,18 +36,61 @@ interface messageInterfaceProps {
     setChats: React.Dispatch<React.SetStateAction<Chat[]>>;
 }
 
+
 const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: messageInterfaceProps) => {
     const { chatId } = useParams<{ chatId: string }>();
     const navigate = useNavigate();
     const inputRef = useRef<HTMLInputElement>(null);
-
+    
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState<boolean>(false);
 
+    // This ref helps us update the last message (the AI stream) in real-time
+    const currentAiMessageRef = useRef<string>("");
+
+    // 1. Initialize WebSocket Hook
+    const { sendMessage, isConnected } = useChatWebSocket({
+        chatId,
+        onStreamStart: () => {
+            setIsTyping(false); // Stop the "typing" bubbles
+            // Add a placeholder message for the AI
+            const newAiMsg: Message = {
+                id: 'temp-ai',
+                content: '',
+                role: 'assistant',
+                chatId: chatId!,
+                created_at: new Date(),
+                citations: []
+            };
+            setMessages(prev => [...prev, newAiMsg]);
+            currentAiMessageRef.current = "";
+        },
+        onMessageReceived: (token) => {
+            currentAiMessageRef.current += token;
+            // Update the last message in the list with the new token
+            setMessages(prev => {
+                const newMessages = [...prev];
+                const lastIndex = newMessages.length - 1;
+                if (newMessages[lastIndex].role === 'assistant') {
+                    newMessages[lastIndex] = { 
+                        ...newMessages[lastIndex], 
+                        content: currentAiMessageRef.current 
+                    };
+                }
+                return newMessages;
+            });
+        },
+        onStreamEnd: (fullContent) => {
+            console.log("Stream finished");
+            // Optionally refresh messages from DB to get real IDs/citations
+        }
+    });
+
     useEffect(() => {
         inputRef.current?.focus();
         if (!chatId) return;
+
         const fetchMessages = async () => {
             const response = await axiosInstance.get(`/chat/${chatId}/messages`);
             setMessages(response.data);
@@ -48,121 +98,51 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
         fetchMessages();
     }, [chatId]);
 
-    const streamChat = async (message: string, conversationId: string | null) => {
-        const token = localStorage.getItem('userToken');
-
-        setMessages(prev => [...prev, {
-            id: 'temp-ai',
-            content: '',
-            role: 'assistant',
-            chatId: conversationId ?? '',
-            created_at: new Date(),
-            citations: []
-        }]);
-
-        // ✅ FIXED: removed /api/v1 since VITE_BASE_URL already includes it
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/chat/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-                message,
-                conversation_id: conversationId ?? null
-            }),
-        });
-
-        if (!response.ok) {
-            console.error('Stream request failed:', response.status);
-            return;
-        }
-
-        const reader = response.body!.getReader();
-        const decoder = new TextDecoder();
-        let isFirst = true;
-        let fullContent = '';
-
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value);
-
-            if (isFirst) {
-                try {
-                    const firstNewline = chunk.indexOf('\n');
-                    const metaStr = firstNewline !== -1 ? chunk.slice(0, firstNewline) : chunk;
-                    const meta = JSON.parse(metaStr);
-
-                    if (meta.conversation_id) {
-                        setChats(prev => {
-                            const exists = prev.find(c => c.id === meta.conversation_id);
-                            if (exists) return prev;
-                            return [{ id: meta.conversation_id, title: message, created_at: new Date() }, ...prev];
-                        });
-                        navigate(`/chat/${meta.conversation_id}`, { replace: true });
-                    }
-
-                    const remainder = firstNewline !== -1 ? chunk.slice(firstNewline + 1) : '';
-                    if (remainder) {
-                        fullContent += remainder;
-                        setMessages(prev => {
-                            const updated = [...prev];
-                            const lastIdx = updated.length - 1;
-                            if (updated[lastIdx]?.role === 'assistant') {
-                                updated[lastIdx] = { ...updated[lastIdx], content: fullContent };
-                            }
-                            return updated;
-                        });
-                    }
-                } catch (_) {
-                    fullContent += chunk;
-                }
-                isFirst = false;
-            } else {
-                fullContent += chunk;
-                setMessages(prev => {
-                    const updated = [...prev];
-                    const lastIdx = updated.length - 1;
-                    if (updated[lastIdx]?.role === 'assistant') {
-                        updated[lastIdx] = { ...updated[lastIdx], content: fullContent };
-                    }
-                    return updated;
-                });
-            }
-        }
-
-        setIsTyping(false);
-    };
-
     const handleSend = async () => {
         if (!input.trim()) return;
 
+        // CASE 1: New Conversation (No Chat ID yet)
+        if (!chatId) {
+            setIsTyping(true);
+            try {
+                // First message must be sent via POST to create the conversation ID
+                const response = await axiosInstance.post('/chat/', {
+                    message: input,
+                    conversation_id: null
+                });
+                const newId = response.data.conversation_id;
+                
+                // Update Sidebar
+                setChats(prev => [{ id: newId, title: input, created_at: new Date() }, ...prev]);
+                
+                // Redirect - the WebSocket hook in the next page load will handle future messages
+                navigate(`/chat/${newId}`);
+                setInput('');
+            } catch (err) {
+                setIsTyping(false);
+            }
+            return;
+        }
+
+        // CASE 2: Existing Conversation (Use WebSocket)
         const userMessage: Message = {
             id: Date.now().toString(),
             content: input,
             role: 'user',
-            chatId: chatId ?? '',
+            chatId: chatId,
             created_at: new Date(),
             citations: []
         };
-
+        
         setMessages(prev => [...prev, userMessage]);
-        setIsTyping(true);
-        const currentInput = input;
+        setIsTyping(true); // Show bubbles until first token arrives
+        sendMessage(input); // SEND VIA WS
         setInput('');
-
-        try {
-            await streamChat(currentInput, chatId ?? null);
-        } catch (err) {
-            console.error('Stream error:', err);
-            setIsTyping(false);
-        }
     };
 
     return (
         <div className="flex-1 flex flex-col">
+            {/* Header stays same */}
             <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-4">
                 <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-gray-100 rounded-lg">
                     <Menu className="w-5 h-5" />
@@ -171,7 +151,7 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
                     <div className="w-8 h-8 bg-primary-dark rounded-lg flex items-center justify-center">
                         <Bot className="w-5 h-5 text-text" />
                     </div>
-                    <h1 className="text-lg font-semibold text-primary-dark">LegalGPT Nepal</h1>
+                    <h1 className="text-lg font-semibold text-primary-dark">LegalGPT Nepal {isConnected ? "•" : "(connecting...)"}</h1>
                 </div>
             </div>
 
@@ -197,7 +177,7 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
                         </div>
                         <button
                             onClick={handleSend}
-                            disabled={!input.trim()}
+                            disabled={!input.trim() || (chatId && !isConnected)}
                             className={`p-3 rounded-full ${input.trim() ? 'bg-primary-dark text-white' : 'bg-gray-200 text-gray-400'}`}
                         >
                             <Send className="w-5 h-5" />
@@ -207,6 +187,6 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
             </div>
         </div>
     );
-};
+}
 
 export default MessageInterfaceSection;
