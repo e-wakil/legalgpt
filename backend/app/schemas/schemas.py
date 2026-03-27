@@ -81,3 +81,11 @@ class ConversationResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# --- UPDATE SCHEMAS ---
+class ConversationUpdate(BaseModel):
+    title: str
+
+class MessageUpdate(BaseModel):
+    content: str

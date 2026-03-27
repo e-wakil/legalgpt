@@ -8,6 +8,7 @@ from app.core.database import get_db
 from app.api.deps import get_current_user, get_current_user_ws
 import json
 from app.services.ai_service import ai_service
+from fastapi import Response
 
 
 router = APIRouter()
@@ -200,7 +201,7 @@ async def list_conversations(
         models.Conversation.user_id == current_user.id
     ).order_by(models.Conversation.created_at.desc()).all()
 
-@router.get("/{conversation_id}/messages", response_model=List[schemas.MessageBase])
+@router.get("/{conversation_id}/messages", response_model=List[schemas.MessageResponse])
 async def get_messages(
     conversation_id: UUID, 
     db: Session = Depends(get_db), 
@@ -216,3 +217,117 @@ async def get_messages(
         raise HTTPException(status_code=404, detail="Conversation not found or unauthorized")
 
     return conv.messages
+
+
+# --- CONVERSATION MANAGEMENT ---
+@router.patch("/conversations/{conversation_id}", response_model=schemas.ConversationResponse)
+async def rename_conversation(
+    conversation_id: UUID,
+    payload: schemas.ConversationUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    conversation = db.query(models.Conversation).filter(
+        models.Conversation.id == conversation_id,
+        models.Conversation.user_id == current_user.id
+    ).first()
+
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    conversation.title = payload.title
+    db.commit()
+    db.refresh(conversation)
+    return conversation
+
+
+@router.delete("/conversations/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_conversation(
+    conversation_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    conversation = db.query(models.Conversation).filter(
+        models.Conversation.id == conversation_id,
+        models.Conversation.user_id == current_user.id
+    ).first()
+
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # Delete all messages associated (SQLAlchemy handles this if cascade is set, but we do
+    # it manually or via relationship here)
+    db.query(models.Message).filter(models.Message.conversation_id == conversation_id).delete()
+    db.delete(conversation)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# --- MESSAGE MANAGEMENT ---
+
+@router.delete("/{conversation_id}/messages/{message_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_specific_message(
+    conversation_id: UUID,
+    message_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """
+    Deletes a specific message within a specific conversation. Ensure the message belongs to
+    the conversation and the conversation belongs to the user.
+    """
+
+    # 1. Look for the message and join with Conversation to check user ownership in one query
+    message = db.query(models.Message).join(models.Conversation).filter(
+        models.Message.id == message_id,
+        models.Message.conversation_id == conversation_id,
+        models.Conversation.user_id == current_user.id
+    ).first()
+
+    # 2. If not found, it's either an invalid ID or the user is trying to delete someone else's message
+    if not message:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Message not found in the specified conversation or unauthorized access."
+        )
+    
+    # 3. Perform the deletion
+    db.delete(message)
+    db.commit()
+
+    # 4. Return 204 No Content
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@router.patch("/{conversation_id}/messages/{message_id}", response_model=schemas.MessageResponse)
+async def edit_specific_message(
+    coversation_id: UUID,
+    message_id: UUID,
+    payload: schemas.MessageUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """
+    Edits the content of a user message.
+    Strictly forbids editing assistant (AI) responses.
+    """
+    # Join with Conversation to verify ownership
+    message = db.query(models.Message).join(models.Conversation).filter(
+        models.Message.id == message_id,
+        models.Message.conversation_id == coversation_id,
+        models.Conversation.user_id == current_user.id
+    ).first()
+
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    # Security: User can only edit their own prompts, not the AI's legal advice
+    if message.role != "user":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only messages sent by the user can be edited."
+        )
+    
+    message.content = payload.content
+    db.commit()
+    db.refresh(message)
+    return  message
