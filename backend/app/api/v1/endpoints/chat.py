@@ -41,43 +41,47 @@ async def websocket_endpoint(
             user_input = json.loads(data).get("message")
             if not user_input: continue
 
-            # Update conversation title if it's a new chat
-            if conversation.title == "New Chat" or len(conversation.title) < 5:
-                conversation.title = user_input[:40] + ("..." if len(user_input) > 40 else "")
-                db.add(conversation)
+            # 3. GET LEGAL CONTEXT (RAG)
+            # Before the AI starts talking, we find the relevant laws
+            rag_data = await ai_service.get_rag_context(user_input)
+            context = rag_data.get("context", "")
+            citations = rag_data.get("citations", [])
 
-            # 3. Save User Message to DB
+            # 4. SEND CITATIONS TO FRONTEND IMMEDIATELY
+            # This allows the UI to show the "Sources" box while the AI is still "thinking"
+            await websocket.send_json({
+                "type": "citations", 
+                "citations": citations
+            })
+
+            # 5. SAVE USER MESSAGE TO DB
             user_msg = models.Message(conversation_id=conversation_id, role="user", content=user_input)
             db.add(user_msg)
             db.commit()
 
-            # 4. Fetch History from DB
-            # Fetching all messages for this session
+            # 6. FETCH HISTORY
             history_objs = db.query(models.Message).filter(
                 models.Message.conversation_id == conversation_id
             ).order_by(models.Message.created_at.asc()).all()
             
-            # Format history (Exclude the last message we just added to keep it as current 'query')
             formatted_history = []
             for m in history_objs[:-1]:
-                formatted_history.append({
-                    "role": "assistant" if m.role == "assistant" else "user",
-                    "content": m.content
-                })
+                formatted_history.append({"role": m.role, "content": m.content})
 
-            # 5. Stream from AI Worker
+            # 7. STREAM FROM AI WORKER (Pass the context here)
             full_ai_response = ""
             await websocket.send_json({"type": "start"})
 
-            async for token in ai_service.get_model_stream(user_input, formatted_history):
+            async for token in ai_service.get_model_stream(user_input, formatted_history, context):
                 full_ai_response += token
                 await websocket.send_json({"type": "content", "content": token})
 
-            # 6. Save Final AI Response to DB
+            # 8. SAVE FINAL AI RESPONSE (Include citations in DB)
             ai_msg = models.Message(
                 conversation_id=conversation_id, 
                 role="assistant", 
-                content=full_ai_response
+                content=full_ai_response,
+                citations=citations  # This saves the RAG sources in the database
             )
             db.add(ai_msg)
             db.commit()
@@ -99,34 +103,20 @@ async def chat_with_llm(
 ):
     # --- 1. VALIDATE OR CREATE CONVERSATION ---
     if request.conversation_id:
-        # Check if conversation exists
         conversation = db.query(models.Conversation).filter(
-            models.Conversation.id == request.conversation_id
+            models.Conversation.id == request.conversation_id,
+            models.Conversation.user_id == current_user.id
         ).first()
 
         if not conversation:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, 
-                detail="Conversation not found"
-            )
-
-        # SECURITY: Check ownership
-        if conversation.user_id != current_user.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, 
-                detail="You do not have permission to access this conversation"
-            )
+            raise HTTPException(status_code=404, detail="Conversation not found or unauthorized")
         
         active_conv = conversation
-        # If the conversation title is the default, update it with the first message
-        if active_conv.title == "New Chat":
-            active_conv.title = request.message[:40] + "..." if len(request.message) > 40 else request.message
-            db.add(active_conv)
     else:
-        # Create a new conversation if no ID provided
+        # Create a new conversation
         active_conv = models.Conversation(
             user_id=current_user.id,
-            title=request.message[:50] + "..." if len(request.message) > 50 else request.message
+            title=request.message[:40] + ("..." if len(request.message) > 40 else "")
         )
         db.add(active_conv)
         db.commit()
@@ -136,36 +126,51 @@ async def chat_with_llm(
     user_msg = models.Message(
         conversation_id=active_conv.id,
         role="user",
-        content=request.message,
-        citations=[] # Default empty list for JSONB
+        content=request.message
     )
     db.add(user_msg)
+    db.commit()
 
-    # --- 3. AI LOGIC (WITH ERROR HANDLING) ---
+    # --- 3. CALL RAG SERVICE ---
+    # Fetch relevant laws and citations before calling the AI
+    rag_data = await ai_service.get_rag_context(request.message)
+    context = rag_data.get("context", "")
+    citations = rag_data.get("citations", [])
+
+    # --- 4. FETCH HISTORY FOR AI CONTEXT ---
+    history_objs = db.query(models.Message).filter(
+        models.Message.conversation_id == active_conv.id
+    ).order_by(models.Message.created_at.asc()).all()
+    
+    # Exclude the message we just saved to send it as the current 'query'
+    formatted_history = []
+    for m in history_objs[:-1]:
+        formatted_history.append({"role": m.role, "content": m.content})
+
+    # --- 5. CALL AI SERVICE (NON-STREAMING WRAPPER) ---
     try:
-        # This is where your OpenAI / LangChain call goes
-        # Example: ai_content = await call_legal_llm(request.message)
-        ai_content = f"Legal analysis for {current_user.full_name}: Based on your query, here is the legal perspective..."
+        full_ai_response = ""
+        # Since get_model_stream is a generator, we collect all tokens here
+        async for token in ai_service.get_model_stream(request.message, formatted_history, context):
+            full_ai_response += token
         
-        # Simulated citations
-        sources = [{"source": "Constitution Art. 1", "link": "https://legal.gov"}]
-
+        # --- 6. SAVE AI RESPONSE WITH CITATIONS ---
         ai_msg = models.Message(
             conversation_id=active_conv.id,
             role="assistant",
-            content=ai_content,
-            citations=sources
+            content=full_ai_response,
+            citations=citations # Save the RAG citations to the DB
         )
         db.add(ai_msg)
-        db.commit() # Save both user and assistant messages
+        db.commit()
         db.refresh(ai_msg)
 
     except Exception as e:
-        db.rollback() # If AI fails, don't save the half-finished conversation
-        print(f"LLM Error: {str(e)}")
+        db.rollback()
+        print(f"LLM/RAG Error: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="The AI assistant is currently unavailable. Please try again."
+            status_code=500,
+            detail="The legal assistant encountered an error while processing your request."
         )
 
     return {
