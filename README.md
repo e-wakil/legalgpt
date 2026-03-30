@@ -153,7 +153,7 @@ To ensure legal accuracy, LegalGPT follows a **5-stage retrieval process**:
 ### 1. Prerequisites
 *   Python 3.10+ & Node.js 18+
 *   PostgreSQL 15+
-*   [Ollama Engine](https://ollama.com/) (Running Mistral Nemo 12B)
+*   [Ollama Engine](https://ollama.com/)
 
 ### 2. Setup Services
 Detailed setup instructions are available in the respective subdirectories:
