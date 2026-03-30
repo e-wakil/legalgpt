@@ -1,153 +1,166 @@
 # LegalGPT Nepal 🇳🇵⚖️
 
-![Status](https://img.shields.io/badge/Status-In%20Development-yellow)
+![Status](https://img.shields.io/badge/Status-Final_Year_Project-success)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB)
-![React](https://img.shields.io/badge/Frontend-React-61DAFB)
+![React](https://img.shields.io/badge/Frontend-React_19-61DAFB)
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688)
-![AI](https://img.shields.io/badge/Model-Mistral%20Nemo%2012B-purple)
 
-**LegalGPT Nepal** is an AI-powered legal advisory system designed to democratize access to legal information for Nepalese citizens. Developed as a **Final Year Computer Engineering Project**, it utilizes Retrieval-Augmented Generation (RAG) to provide accurate, context-aware answers based on the Constitution and Laws of Nepal.
+**LegalGPT Nepal** is an AI-powered legal advisory system designed to provide accurate, context-aware answers to queries regarding the Constitution and Laws of Nepal. Developed as a **Final Year Computer Engineering Project (IOE, Purwanchal Campus)**, it utilizes a sophisticated multi-stage RAG pipeline to ensure all AI responses are grounded in official legal documents, preventing hallucinations.
 
 ---
 
 ## 🚀 Key Features
 
-*   **AI Legal Assistant:** Powered by a fine-tuned **Mistral Nemo 12B** model to answer legal queries.
-*   **High-Performance Backend:** Built with **FastAPI** for native asynchronous processing and high-speed WebSocket streaming.
-*   **RAG Architecture:** Uses `pgvector` to retrieve relevant legal documents (IIO format) before answering, ensuring high accuracy.
-*   **Real-Time Streaming:** Instant token-by-token responses via WebSockets.
-*   **Secure Authentication:** Google OAuth 2.0 integration with JWT session management.
-*   **Citations:** Every AI response includes references to the specific articles or legal documents used.
+*   **🔍 Hybrid RAG Engine:** Combines **BM25 (Keyword)** and **FAISS (Semantic)** search for high-precision retrieval of legal clauses.
+*   **🧠 Fine-Tuned AI Assistant:** Powered by **Mistral 7B Instruct** (quantized via 4-bit QLoRA) for natural, flowing legal explanations.
+*   **📜 Verified Citations:** Every response includes direct references to the specific **Law, Chapter, and Section** used as a source.
+*   **⚡ Real-Time Streaming:** Instant, token-by-token response delivery via **Asynchronous WebSockets**.
+*   **🔐 Secure Sessions:** Enterprise-grade authentication using **Google OAuth 2.0** and JWT session management.
+*   **📊 Admin Dashboard:** Full visibility into user interactions and system logs via **SQLAdmin**.
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ System Architecture (Landscape)
 
-The system follows a modern full-stack architecture optimized for async AI operations.
+The system follows a microservices-oriented architecture to separate retrieval logic from language generation.
 
 ```mermaid
-graph TD
+graph TB
     %% -- Styles --
-    classDef client fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-    classDef frontend fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
-    classDef backend fill:#e0f2f1,stroke:#00695c,stroke-width:2px;
-    classDef db fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
-    classDef ai fill:#ffebee,stroke:#c62828,stroke-width:2px;
+    classDef user fill:#ffffff,stroke:#333,stroke-width:2px;
+    classDef external fill:#f5f5f5,stroke:#9e9e9e,stroke-width:2px,stroke-dasharray: 5 5;
+    classDef frontend fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
+    classDef backend fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    classDef worker fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef storage fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
 
-    %% -- Nodes --
-    User((User)):::client
-    subgraph Frontend ["React Frontend"]
-        UI["UI / Chat Interface"]:::frontend
-        Auth["Google Auth Handler"]:::frontend
-    end
-    
-    subgraph Backend ["FastAPI Backend"]
-        API["API Router"]:::backend
-        ConnMgr["Connection Manager<br/>(In-Memory)"]:::backend
-        RAG["RAG Service"]:::backend
-    end
-    
-    subgraph Database ["Data Layer"]
-        PG[("PostgreSQL + pgvector<br/>(User Data & Embeddings)")]:::db
-    end
-    
-    subgraph AI ["AI Engine"]
-        LLM["Mistral Nemo 12B<br/>(4-bit QLoRA)"]:::ai
+    %% -- User Layer --
+    Citizen(( User )):::user
+
+    %% -- External Services --
+    GAuth[[Google OAuth 2.0]]:::external
+
+    %% -- Client Layer --
+    subgraph Client ["Client Layer (React.js)"]
+        UI[Chat Interface & History Dashboard]:::frontend
+        AuthHandler[Google Auth Handler]:::frontend
     end
 
-    %% -- Flows --
-    User --> UI
-    UI -->|Login| Auth
-    Auth -->|Verify| API
-    UI -->|WS Connect| ConnMgr
-    ConnMgr -->|Query| RAG
-    RAG <-->|Semantic Search| PG
-    RAG -->|Context + Prompt| LLM
-    LLM -->|Stream Tokens| ConnMgr
-    ConnMgr -->|Stream Response| UI
+    %% -- Logic Layer --
+    subgraph Backend ["Orchestration Layer (FastAPI)"]
+        direction TB
+        subgraph Gateways ["API Managers"]
+            REST[REST API Manager<br/>'History & CRUD']:::backend
+            WS[WebSocket Manager<br/>'Real-time Streaming']:::backend
+        end
+        ORM[SQLAlchemy / Database Logic]:::backend
+    end
+
+    %% -- Intelligence Layer --
+    subgraph Workers ["Service Layer (Microservices)"]
+        RAG[RAG Worker<br/>'Legal Retrieval']:::worker
+        AI[AI Worker<br/>'Inference Engine']:::worker
+    end
+
+    %% -- Data Layer --
+    subgraph Storage ["Data Layer"]
+        PG[(PostgreSQL<br/>'Users & Chats')]:::storage
+        LLM[[Ollama<br/>'Mistral Nemo']]:::storage
+        Index[('FAISS Index & PDFs')]:::storage
+    end
+
+    %% -- Connections (Simplified Flow) --
+    
+    %% User to App
+    Citizen <-->|Interacts| UI
+    
+    %% Auth Flow
+    AuthHandler <-->|Identity Verification| GAuth
+    AuthHandler -.->|JWT Token| REST
+    
+    %% Frontend to Backend
+    UI <-->|HTTP / WS| Gateways
+    Gateways <--> ORM
+    ORM <--> PG
+
+    %% Internal Service Loop
+    Gateways <-->|Law Retrieval| RAG
+    RAG <--> Index
+    
+    Gateways <-->|Generate Answer| AI
+    AI <--> LLM
+```
+
+---
+
+## 📂 Project Structure
+
+```text
+LegalGPT-Nepal/
+├── ai/                         # Inference Microservice (Port 8001)
+│   ├── prompts/                # Legal persona & prompt templates
+│   ├── ai_worker.py            # Ollama FastAPI bridge
+│   └── requirements.txt
+├── backend/                    # Main Orchestration API (Port 8000)
+│   ├── alembic/                # DB Migrations
+│   ├── app/                    # Auth, WS Manager, REST routes
+│   ├── docker-compose.yml      # Infrastructure (PostgreSQL)
+│   └── requirements.txt
+├── frontend/                   # React.js User Interface
+│   ├── src/
+│   │   ├── hooks/              # WebSocket & API hooks
+│   │   ├── sections/           # Modular Chat UI components
+│   │   └── store/              # Zustand state management
+│   └── package.json
+├── rag/                        # Retrieval Microservice (Port 8002)
+│   ├── pdfs/                   # Raw Nepalese Law Corpus (PDFs)
+│   ├── data/                   # FAISS Vector Index & Metadata
+│   ├── ingest.py               # PDF Processing & Embedding pipeline
+│   ├── rag_worker.py           # Hybrid Search API
+│   └── requirements.txt
+└── README.md
 ```
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Component | Technology | Details |
+| Component | Technology | Role |
 | :--- | :--- | :--- |
-| **Frontend** | React.js | Vite, Tailwind CSS, TanStack Query |
-| **Backend** | FastAPI | Python Async, Pydantic, Uvicorn |
-| **Database** | PostgreSQL | `pgvector` extension for Vectors & JSONB |
-| **AI Model** | Mistral Nemo 12B | 4-bit QLoRA quantization, Unsloth |
-| **Auth** | OAuth 2.0 | Google Sign-In + JWT |
+| **Frontend** | React 19, TypeScript | Vite, Tailwind CSS 4, Framer Motion |
+| **Backend** | FastAPI (Python) | Async Orchestration, WebSockets, JWT |
+| **Database** | PostgreSQL | User Data & Chat History Persistence |
+| **RAG Engine** | FAISS + BM25 | Multi-stage Hybrid Retrieval |
+| **AI Model** | Mistral 7B Instruct | Language Generation (via Ollama) |
+| **Auth** | OAuth 2.0 | Secure Google Login integration |
+
 ---
 
-## 📂 Repository Structure
+## 🔍 How the RAG Pipeline Works
 
-This project utilizes a **Monorepo** structure:
-
-```text
-LegalGPT-Nepal/
-├── backend/            # FastAPI Application
-│   ├── app/
-│   │   ├── api/        # REST & WebSocket Routes
-│   │   ├── core/       # Config, Security, DB setup
-│   │   ├── services/   # RAG & AI Logic
-│   │   └── main.py     # Entry Point
-│   ├── alembic/        # DB Migrations
-│   └── requirements.txt
-├── frontend/           # React User Interface
-├── ai_engine/          # Notebooks for Fine-tuning & RAG Pipeline
-├── data/               # Raw and Processed Legal Datasets
-└── docs/               # Project Documentation & Diagrams
-```
+To ensure legal accuracy, LegalGPT follows a **5-stage retrieval process**:
+1.  **Semantic Search (FAISS):** Captures the intent of the user query.
+2.  **Keyword Search (BM25):** Ensures specific legal terms/Section numbers are found.
+3.  **RRF Fusion:** Merges semantic and keyword results into a single ranked list.
+4.  **Legal Boost:** Prioritizes documents if specific Sections (e.g., "Section 40") are mentioned.
+5.  **Cross-Encoder Reranking:** A specialized transformer model re-evaluates the top candidates to select the **Top 3** most relevant legal snippets for the AI context.
 
 ---
 
 ## ⚡ Getting Started
 
-Follow these instructions to set up the project locally.
+### 1. Prerequisites
+*   Python 3.10+ & Node.js 18+
+*   PostgreSQL 15+
+*   [Ollama Engine](https://ollama.com/) (Running Mistral Nemo 12B)
 
-### Prerequisites
-*   Python 3.10+
-*   Node.js & npm
-*   PostgreSQL (with pgvector installed)
-
-### 1. Backend Setup (FastAPI)
-
-```bash
-cd backend
-python -m venv venv
-# Activate venv: source venv/bin/activate (Mac/Linux) or venv\Scripts\activate (Windows)
-
-pip install -r requirements.txt
-
-# Create .env file based on .env.example
-# Ensure DB credentials are set
-
-# Run Database Migrations (if using Alembic)
-alembic upgrade head
-
-# Start the Server
-uvicorn app.main:app --reload
-```
-*The API Documentation will be available at `http://localhost:8000/docs`*
-
-### 2. Frontend Setup (React)
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### 3. AI Engine Setup
-*Note: You need an NVIDIA GPU (T4 or RTX series) to run the quantization scripts efficiently.*
-
-```bash
-cd ai_engine
-pip install -r requirements.txt
-# Run the notebooks/ scripts to preprocess data or test the model
-```
+### 2. Setup Services
+Detailed setup instructions are available in the respective subdirectories:
+*   [Backend Setup](./backend/README.md)
+*   [RAG Worker Setup](./rag/README.md)
+*   [AI Worker Setup](./ai/README.md)
+*   [Frontend Setup](./frontend/README.md)
 
 ---
 
@@ -163,7 +176,6 @@ pip install -r requirements.txt
 ---
 
 ## 📝 License
+This project is licensed under the MIT License.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-*Submitted as a fulfillment of the Final Year Project, Bachelor of Computer Engineering.*
+*Submitted as a fulfillment of the Final Year Project, Bachelor of Computer Engineering, IOE Purwanchal Campus.*
