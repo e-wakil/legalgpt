@@ -15,10 +15,10 @@ const FIrstMessageSection = ({ setInput }: FirstMessageProps) => {
   return (
     <div className="flex flex-col items-center justify-center h-full py-16">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl md:text-5xl font-bold text-black">
+        <h1 className="text-4xl md:text-5xl font-bold text-text2">
           Hello <span className="text-primary">{user?.name}</span>,
         </h1>
-        <p className="text-xl md:text-2xl">What do you want to know today?</p>
+        <p className="text-black text-xl md:text-2xl">What do you want to know today?</p>
       </div>
 
       <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
@@ -26,10 +26,10 @@ const FIrstMessageSection = ({ setInput }: FirstMessageProps) => {
           <button
             key={index}
             className="bg-black/10 hover:bg-black/20 transition p-4 rounded-xl text-left border border-black/20"
-            onClick={() => setInput(item.query)} // Corrected handler
+            onClick={() => setInput(item.query)}
           >
             <p className="text-black font-medium">{item.label}</p>
-            <p className="text-sm mt-1">{item.desc}</p>
+            <p className="text-sm text-text2 mt-1">{item.desc}</p>
           </button>
         ))}
       </div>

@@ -1,68 +1,78 @@
 // src/hooks/useChatWebSocket.ts
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from "react";
 
 interface UseChatWSProps {
-    chatId: string | undefined;
-    onMessageReceived: (content: string) => void;
-    onStreamStart: () => void;
-    onStreamEnd: (fullContent: string) => void;
+  chatId: string | undefined;
+  onMessageReceived: (content: string) => void;
+  onStreamStart: () => void;
+  onStreamEnd: (fullContent: string) => void;
 }
 
-export const useChatWebSocket = ({ chatId, onMessageReceived, onStreamStart, onStreamEnd }: UseChatWSProps) => {
-    const socketRef = useRef<WebSocket | null>(null);
-    const [isConnected, setIsConnected] = useState(false);
-    const fullContentRef = useRef("");
+export const useChatWebSocket = ({
+  chatId,
+  onMessageReceived,
+  onStreamStart,
+  onStreamEnd,
+}: UseChatWSProps) => {
+  const socketRef = useRef<WebSocket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const fullContentRef = useRef("");
 
-    useEffect(() => {
-        // console.log("chatID:", chatId)
-        if (!chatId) return;
+  useEffect(() => {
+    // console.log("chatID:", chatId)
+    if (!chatId) return;
 
-        const token = localStorage.getItem('userToken');
-        // Replace with your actual backend WS URL
-        const wsUrl = `${import.meta.env.VITE_WS_URL}/chat/ws/${chatId}?token=${token}`;
-        
-        const socket = new WebSocket(wsUrl);
-        socketRef.current = socket;
+    const token = localStorage.getItem("userToken");
+    // Replace with your actual backend WS URL
+    const wsUrl = `${import.meta.env.VITE_WS_URL}/chat/ws/${chatId}?token=${token}`;
+    // const wsUrl = `${import.meta.env.VITE_WS_URL}`
 
-        socket.onopen = () => {
-            console.log("WebSocket Connected");
-            setIsConnected(true);
-        };
+    const socket = new WebSocket(wsUrl);
+    socketRef.current = socket;
 
-        socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+    socket.onopen = () => {
+      console.log("WebSocket Connected");
+      setIsConnected(true);
+    };
 
-            if (data.type === 'start') {
-                fullContentRef.current = "";
-                onStreamStart();
-            } else if (data.type === 'content') {
-                fullContentRef.current += data.content;
-                onMessageReceived(data.content);
-            } else if (data.type === 'end') {
-                onStreamEnd(fullContentRef.current);
-            } else if (data.type === 'error') {
-                console.error("WS Error:", data.content);
-            }
-        };
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+    //   console.log('data',data)
 
-        socket.onclose = () => {
-            setIsConnected(false);
-            console.log("WebSocket Disconnected");
-        };
+      if (data.type === "start") {
+        fullContentRef.current = "";
+        onStreamStart();
+      } else if (data.type === "content") {
+        fullContentRef.current += data.content;
+        onMessageReceived(data.content);
+      } else if (data.type === "end") {
+        onStreamEnd(fullContentRef.current);
+      } else if (data.type === "error") {
+        console.error("WS Error:", data.content);
+      }
+    };
 
-        return () => {
-            socket.close();
-        };
-    }, [chatId]);
+    socket.onclose = () => {
+      setIsConnected(false);
+      console.log("WebSocket Disconnected");
+    };
 
-    const sendMessage = useCallback((message: string, selectedModel :string) => {
-        console.log(selectedModel)
-        if (socketRef.current) {
-            socketRef.current.send(JSON.stringify({ message, selectedModel }));
-        } else {
-            console.error("Socket not connected");
-        }
-    }, [isConnected]);
+    return () => {
+      socket.close();
+    };
+  }, [chatId]);
 
-    return { sendMessage, isConnected };
+  const sendMessage = useCallback(
+    (message: string) => {
+    //   console.log(selectedModel);
+      if (socketRef.current) {
+        socketRef.current.send(JSON.stringify({ message }));
+      } else {
+        console.error("Socket not connected");
+      }
+    },
+    [isConnected],
+  );
+
+  return { sendMessage, isConnected };
 };

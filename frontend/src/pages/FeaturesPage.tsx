@@ -220,11 +220,11 @@ export default function FeaturesPage() {
               {/* Illustration placeholder — scales of justice motif */}
               <div className="rounded-2xl border border-gray-800 bg-secondary/30 p-8 flex flex-col items-center justify-center gap-4">
                 <PiScalesBold className="w-16 h-16 text-blue-400/40" />
-                <p className="text-gray-600 text-sm text-center">
+                <p className="text-gray-300 text-sm text-center">
                   Balanced. Transparent. Accessible.
                 </p>
                 <div className="w-full h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
-                <p className="text-gray-500 text-xs text-center leading-relaxed max-w-xs">
+                <p className="text-gray-400 text-xs text-center leading-relaxed max-w-xs">
                   LegalGPT does not replace a licensed lawyer. Always seek
                   professional legal advice for serious matters.
                 </p>

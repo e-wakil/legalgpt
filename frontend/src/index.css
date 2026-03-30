@@ -4,18 +4,54 @@
   color: #ffffff; /* text color */
 }
 
-@theme{
-  --default-font-family: 'poppins', sans-serif;
+@theme {
+  --default-font-family: "poppins", sans-serif;
 
-  --color-primary: #1A365D;       /* Headers, main buttons (trustworthy deep blue) */
-  --color-primary-light: #2C5282; /* Hover states, secondary buttons */
-  --color-primary-dark: #0F2743;  /* Navbars, footers */
-  --color-secondary: #4A5568;     /* Icons, outlines, neutral text */
-  --color-text: #F2F2F2;
-  --color-white:#ffffff;
-  --color-black:#000000;
+  --color-primary: #1a365d; /* Headers, main buttons (trustworthy deep blue) */
+  --color-primary-light: #2c5282; /* Hover states, secondary buttons */
+  --color-primary-dark: #0f2743; /* Navbars, footers */
+  --color-secondary: #4a5568; /* hovers*/
+  --color-text: #f2f2f2;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-border: #1a365d;
+  --color-icons: #99a1af;
+  --color-heading: #0f2743;
+  --color-text2: black; /*for texts on white background*/
+  --color-input: #f9fafb; /* for input fields */
+}
+/* Dark mode overrides */
+.dark {
+  --color-primary: #3161a4; /* Headers, main buttons (trustworthy deep blue) */
+  --color-primary-light: #2c5282; /* Hover states, secondary buttons */
+  --color-primary-dark: #1f1f1f; /* Sidebar */
+  --color-secondary: #3a3a3a; /* Input fields, hover effects */
+  --color-text: #ececec; /* Primary text — soft white */
+  --color-white: #1f1f1f; /* Chat section background */
+  --color-black: #d4d4d4; /* Body text on dark bg */
+  --color-border: #1e2939;
+  --color-icons: #99a1af;
+  --color-heading: white; /*for some heading */
+  --color-text2: #ecececd4; /*for texts on white background*/
+  --color-input: #3a3a3a; /* for input fields */
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+/* in index.css */
+::-webkit-scrollbar {
+  width: 6px;
 }
 
-.no-scrollbar{
-  scrollbar-width: none;
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-heading);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
 }

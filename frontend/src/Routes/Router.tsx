@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Outlet, useLocation } from "react-router-dom";
+import { useLayoutEffect } from "react";
 
 //components
 import Navbar from "../components/layout/Navbar";
@@ -23,12 +24,22 @@ const Layout = () => {
     )
 }
 
+//ScrollToTop
+const ScrollToTop = () => {
+    const { pathname } = useLocation();
 
+    useLayoutEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
+
+    return null;
+};
 
 function AppRoutes() {
 
     return (
         <Router>
+            <ScrollToTop />
             <Routes>
                 <Route element={<Layout />}>
                     {/* Routes with Navbar and Footer */}

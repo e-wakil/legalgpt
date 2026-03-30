@@ -9,6 +9,7 @@ import MessageSection from './MessageSection';
 // import testMessages from '../../dummy/testmessages';
 import axiosInstance from '../../api/axiosInstance';
 import { useChatWebSocket } from '../../hooks/useChatWebSocket'; // Import the hook
+import PDFSection from './PDFSection';
 
 
 interface Citation {
@@ -90,6 +91,7 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
                         content: currentAiMessageRef.current
                     };
                 }
+                // console.log(token) //
                 return newMessages;
             });
         },
@@ -143,7 +145,7 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
                 // setInput('');
                 // setConnectionError(false)
                 const response = await axiosInstance.post('/chat/conversations', {
-                    title: input.slice(0,50)
+                    title: input.slice(0, 50)
                 })
                 // console.log(response)
                 const newId = response.data.id;
@@ -162,7 +164,7 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
                     };
                     setMessages(prev => [...prev, userMessage]);
                     setInput('')
-                    sendMessage(input, selectedModel)
+                    sendMessage(input)
                 }, 1000)
                 // location.reload()
 
@@ -188,7 +190,7 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
 
         setMessages(prev => [...prev, userMessage]);
         setIsTyping(true); // Show bubbles until first token arrives
-        sendMessage(input, selectedModel); // SEND VIA WS
+        sendMessage(input); // SEND VIA WS
         setInput('');
     };
 
@@ -196,19 +198,19 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
         <div className="flex-1 flex flex-col">
             {isStreaming && <div className="absolute inset-0 z-50 pointer-events-auto " />}
             {/* Header stays same */}
-            <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between gap-4">
-                <div className='flex'>
-                    <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-gray-100 rounded-lg">
-                        <Menu className="w-5 h-5" />
+            <div className="bg-white border-b border-border px-4 py-3 flex items-center justify-between gap-4">
+                <div className='flex gap-3'>
+                    <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-secondary rounded-lg">
+                        <Menu className="w-5 h-5 text-icons" />
                     </button>
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-primary-dark rounded-lg flex items-center justify-center">
-                            <Bot className="w-5 h-5 text-text" />
+                        <div className="w-8 h-8 bg-[#1a365d] rounded-lg flex items-center justify-center">
+                            <Bot className="w-5 h-5 text-[#ffffff]" />
                         </div>
-                        <h1 className="text-lg font-semibold text-primary-dark">LegalGPT Nepal {isConnected ? "•" : "(connecting...)"}</h1>
+                        <h1 className="text-lg font-semibold text-heading">LegalGPT Nepal {isConnected ? "•" : "(connecting...)"}</h1>
                     </div>
                 </div>
-                <div className='p-2 mr-4'>
+                {/* <div className='p-2 mr-4'>
                     <div className='p-2 mr-4'>
                         <select
                             className='bg-transparent text-black text-sm font-bold outline-none cursor-pointer'
@@ -219,20 +221,29 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
                             <option value="model2" >llama 3.1 8b</option>
                         </select>
                     </div>
-                </div>
+                </div> */}
             </div>
 
             {messages.length > 0 ? (
-                <MessageSection messages={messages} isTyping={isTyping} />
+                <>
+                    {/* // <div className='flex  overflow-y-auto'> */}
+                    {/* <div className='bg-red-700 flex-1'>
+                        <PDFSection />
+                    </div> */}
+                    {/* <div className='flex-3 overflow-y-auto'> */}
+                    <MessageSection messages={messages} isTyping={isTyping} />
+                    {/* </div> */}
+                    {/* // </div> */}
+                </>
             ) : (
                 <FirstMessageSection setInput={setInput} />
             )}
             {connectionError && <div className='text-red-500 m-auto'>Enable Internet connection...</div>}
 
-            <div className="border-t border-gray-200 bg-white px-4 pt-4 pb-2">
+            <div className="border-t border-border bg-white px-4 pt-4 pb-2">
                 <div className="max-w-3xl mx-auto">
                     <div className="flex gap-3 items-end">
-                        <div className="flex-1 bg-gray-50 rounded-3xl border border-gray-200">
+                        <div className="flex-1 bg-input rounded-3xl border-1 border-gray-200">
                             <input
                                 type="text"
                                 ref={inputRef}
@@ -240,17 +251,20 @@ const MessageInterfaceSection = ({ sidebarOpen, setSidebarOpen, setChats }: mess
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                                 placeholder="Ask about Nepal's laws..."
-                                className="w-full px-5 py-3 bg-transparent focus:outline-none"
+                                className="w-full px-5 py-3 bg-transparent focus:outline-none text-black placeholder:text-black/50"
                             />
                         </div>
                         <button
                             onClick={handleSend}
                             disabled={!input.trim() || (chatId && !isConnected) || connectionError}
-                            className={`p-3 rounded-full ${input.trim() ? 'bg-primary-dark text-white' : 'bg-gray-200 text-gray-400'}`}
+                            className={`p-3 rounded-full ${input.trim() ? 'bg-[#1a365d] text-[#ffffff] cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
                         >
                             <Send className="w-5 h-5" />
                         </button>
                     </div>
+                </div>
+                <div className='flex justify-center mt-1 text-text2 text-xs'>
+                    LegalGpt can make mistakes. Check important info.
                 </div>
             </div>
         </div>

@@ -32,7 +32,7 @@ const MessageSection = ({ messages, isTyping }: MessageSectionProps) => {
         {messages.map((message, index) => (
           <div key={index} className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {message.role === 'assistant' && (
-              <div className="w-8 h-8 rounded-lg bg-primary-dark flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-heading flex items-center justify-center flex-shrink-0">
                 <Bot className="w-5 h-5 text-white" />
               </div>
             )}

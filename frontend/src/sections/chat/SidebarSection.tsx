@@ -8,6 +8,8 @@ import { Plus, Search, MessageSquare, SunMoon, MoreHorizontal, Pencil, Pin, Tras
 import logo from '../../assets/LegalGPT-Nepal.png'
 import useUserStore from '../../store/userStore';
 import axiosInstance from '../../api/axiosInstance';
+import { useTheme } from '../../hooks/useTheme';
+
 
 
 
@@ -30,6 +32,9 @@ interface PopupState {
 }
 
 const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sidebarProps) => {
+    //theme
+    const {isDark,toggleTheme} = useTheme()
+
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [popup, setPopup] = useState<PopupState>({ chatId: null, x: 0, y: 0 });
@@ -174,7 +179,7 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sideba
         >
 
             <div className="flex items-center gap-3 flex-1 min-w-0">
-                <MessageSquare className="w-4 h-4 flex-shrink-0 text-gray-400" />
+                <MessageSquare className="w-4 h-4 flex-shrink-0 text-icons" />
                 {rename ?
                     <input type='text'
                         className='outline-none border-none'
@@ -183,11 +188,11 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sideba
                         onBlur={() => setRenameChatId(null)}
                         onKeyDown={(e) => e.key == 'Enter' && sendRename()}
                     /> :
-                    <span className="text-sm truncate">{chat.title}</span>
+                    <span className="text-sm text-text truncate">{chat.title}</span>
                 }
             </div>
             <button
-                className={`opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-700 rounded transition ${popup.chatId === chat.id ? 'opacity-100 bg-gray-700 rounded' : 'opacity-0'}`}
+                className={`opacity-0 group-hover:opacity-100 p-1 hover:bg-hover rounded transition ${popup.chatId === chat.id ? 'opacity-100  rounded' : 'opacity-0'}`}
                 onClick={(e) => handleMoreClick(e, chat.id)}
             >
                 <MoreHorizontal className="w-4 h-4" />
@@ -221,7 +226,7 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sideba
                     <div className="p-2 border-b border-gray-800"
                         onClick={() => openNewChat()}>
                         <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary transition text-sm">
-                            <Plus className="w-5 h-5 flex-shrink-0" />
+                            <Plus className="w-5 h-5 text-icons flex-shrink-0" />
                             {sidebarOpen && <span className="font-medium truncate">New chat</span>}
                         </button>
                     </div>
@@ -230,13 +235,13 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sideba
                     {sidebarOpen && (
                         <div className="p-2">
                             <div className="relative">
-                                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-icons" />
                                 <input
                                     type="text"
                                     placeholder="Search"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-secondary/40 text-text placeholder-gray-400 py-2 pl-9 pr-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-600"
+                                    className="w-full bg-secondary/40 placeholder-gray-400 py-2 pl-9 pr-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-600"
                                 />
                             </div>
                         </div>
@@ -294,12 +299,12 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sideba
                     </div>
 
                     {/* Profile Section at Bottom */}
-                    <div className="border-t border-gray-800 p-2">
+                    <div className="border-t border-border p-2">
                         <button className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-secondary transition"
                             onClick={() => setProfilePopUp(!profilePopUp)}
                         >
-                            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                                <img src={user?.profile} className='w-5 h-5' />
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
+                                <img src={user?.profile} className='w-8 h-8 rounded-full' />
                             </div>
                             {sidebarOpen && (
                                 <>
@@ -323,26 +328,26 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sideba
                         left: popup.x - 16, // align to the right of the button, 160px wide
                         zIndex: 9999,
                     }}
-                    className="w-40 bg-primary-dark border border-gray-700 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150"
+                    className="w-40 bg-primary-dark text-text border border-gray-700 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150"
                 >
                     <button
                         onClick={() => handleRename(popup.chatId!)}
-                        className="w-full flex items-center gap-3 px-2 py-2.5 cursor-pointer text-sm text-gray-200 hover:bg-gray-600 transition"
+                        className="w-full flex items-center gap-3 px-2 py-2.5 cursor-pointer text-sm hover:bg-secondary transition"
                     >
-                        <Pencil className="w-4 h-4 text-gray-400" />
+                        <Pencil className="w-4 h-4 text-icons" />
                         Rename
                     </button>
                     <button
                         onClick={() => handlePin(popup.chatId!)}
-                        className="w-full flex items-center gap-3 px-2 py-2.5 cursor-pointer text-sm text-gray-200 hover:bg-gray-600 transition"
+                        className="w-full flex items-center gap-3 px-2 py-2.5 cursor-pointer text-sm hover:bg-secondary transition"
                     >
-                        <Pin className="w-4 h-4 text-gray-400" />
+                        <Pin className="w-4 h-4 text-icons" />
                         Pin
                     </button>
                     <div className="border-t border-gray-700/60" />
                     <button
                         onClick={() => handleDelete(popup.chatId!)}
-                        className="w-full flex items-center gap-3 px-2 py-2.5 cursor-pointer text-sm text-red-400 hover:bg-gray-600 transition"
+                        className="w-full flex items-center gap-3 px-2 py-2.5 cursor-pointer text-sm text-red-400 hover:bg-secondary transition"
                     >
                         <Trash2 className="w-4 h-4" />
                         Delete
@@ -413,25 +418,25 @@ const SidebarSection = ({ sidebarOpen, setSidebarOpen, chats, setChats }: sideba
                             left: '10px', // align to the right of the button, 160px wide
                             zIndex: 9999,
                         }}
-                        className="w-60 bg-primary-dark border-2 border-gray-700 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150"
+                        className="w-60 bg-primary-dark border-2 text-text border-gray-700 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150"
                     >
                         <button
-                            onClick={() => handleRename(popup.chatId!)}
-                            className="w-full flex items-center gap-3 px-2 py-2.5 cursor-pointer text-sm text-gray-200 hover:bg-gray-600 transition"
+                            onClick={() => toggleTheme()}
+                            className="w-full flex items-center gap-3 px-2 py-2.5 cursor-pointer text-sm hover:bg-secondary transition"
                         >
-                            <SunMoon className="w-4 h-4 text-gray-400" />
-                            Switch to dark mode
+                            <SunMoon className="w-4 h-4 text-icons" />
+                            Switch to {isDark ? 'Light' : 'Dark'} mode
                         </button>
                         <button
                             onClick={() => handlePin(popup.chatId!)}
-                            className="w-full flex items-center gap-3 px-2 py-2.5 cursor-pointer text-sm text-gray-200 hover:bg-gray-600 transition"
+                            className="w-full flex items-center gap-3 px-2 py-2.5 cursor-pointer text-sm hover:bg-secondary transition"
                         >
-                            <Settings className="w-4 h-4 text-gray-400" />
+                            <Settings className="w-4 h-4 text-icons" />
                             Settings
                         </button>
                         <div className="border-t border-gray-700/60" />
                         <button
-                            className="w-full flex items-center gap-3 px-2 py-2.5 cursor-pointer text-sm text-red-400 hover:bg-gray-600 transition"
+                            className="w-full flex items-center gap-3 px-2 py-2.5 cursor-pointer text-sm text-red-400 hover:bg-secondary transition"
                             onClick={() => setLogOutPopUp(true)}
                         >
                             <LogOut className="w-4 h-4" />

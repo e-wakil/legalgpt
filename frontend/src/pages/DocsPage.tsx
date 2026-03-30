@@ -10,6 +10,11 @@ import {
   PiCheckCircleBold,
 } from "react-icons/pi";
 
+//pdfs
+import nepalConstitution from '../assets/nepal-constitution.pdf'
+import dataSet from '../assets/dataSet.json'
+import majorReport from '../assets/Major_Report.pdf'
+
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 const categories = ["All", "Reports", "Datasets", "Documentation"];
@@ -28,6 +33,7 @@ const documents = [
     version: "Final — 2024",
     highlights: ["System Architecture", "Model Evaluation", "Literature Review", "Conclusion & Future Work"],
     filename: "LegalGPT_Project_Report.pdf",
+    download: majorReport
   },
   {
     id: 2,
@@ -42,6 +48,8 @@ const documents = [
     version: "v1.0 — 2024",
     highlights: ["Constitutional Provisions", "Muluki Ain Clauses", "Civil & Criminal Codes", "Annotated Q&A Pairs"],
     filename: "LegalGPT_Datasets.zip",
+    download: dataSet
+
   },
   {
     id: 3,
@@ -50,14 +58,32 @@ const documents = [
     accent: "#3b82f6",
     tag: "Markdown / PDF",
     title: "Model Documentation",
-    description:
-      "Technical documentation covering the LegalGPT model pipeline, prompt engineering strategies, API usage, fine-tuning approach, and deployment notes.",
-    size: "1.1 MB",
-    version: "v1.0 — 2024",
-    highlights: ["API Reference", "Prompt Engineering Guide", "Fine-tuning Details", "Deployment Notes"],
-    filename: "LegalGPT_Model_Docs.pdf",
-  },
+    description: "Unofficial Legal constitution of Nepal translated in English language.",
+    size: "4.9 MB",
+    version: "v1.0 — 2014",
+    highlights: ["Legal Document", "UnOfficial Translation"],
+    filename: "Nepal Constitution (English).pdf",
+    download: nepalConstitution
+  }
 ];
+
+function handleDownload(doc: any) {
+  if (doc.filename.endsWith('.json')) {
+    const blob = new Blob([JSON.stringify(doc.download, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = doc.filename;
+    link.click();
+    URL.revokeObjectURL(url);
+    return;
+  }
+  // for pdf and other files
+  const link = document.createElement('a');
+  link.href = doc.download;
+  link.download = doc.filename;
+  link.click();
+}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -102,9 +128,9 @@ const DocCard = ({ doc }: { doc: (typeof documents)[0] }) => {
           <p className="text-gray-600 text-xs">{doc.size}</p>
         </div>
         <button
+          onClick={() => handleDownload(doc)}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white transition-all duration-200 hover:gap-3"
           style={{ background: `${doc.accent}CC` }}
-          onClick={() => alert(`Downloading ${doc.filename}…`)}
         >
           <PiDownloadSimpleBold className="w-4 h-4" />
           Download
@@ -171,11 +197,10 @@ export default function DocsPage() {
               <button
                 key={cat}
                 onClick={() => setActive(cat)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border ${
-                  active === cat
-                    ? "bg-emerald-500 border-emerald-500 text-white"
-                    : "border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-200"
-                }`}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border ${active === cat
+                  ? "bg-emerald-500 border-emerald-500 text-white"
+                  : "border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-200"
+                  }`}
               >
                 {cat}
               </button>
