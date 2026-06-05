@@ -13,7 +13,7 @@
 
 ## 🚀 Key Features
 
-*   **AI Legal Assistant:** Powered by a fine-tuned **Mistral Nemo 12B** model to answer legal queries.
+*   **AI Legal Assistant:** Powered by a fine-tuned **Mistral 7B Instruct** model to answer legal queries.
 *   **High-Performance Backend:** Built with **FastAPI** for native asynchronous processing and high-speed WebSocket streaming.
 *   **RAG Architecture:** Uses `pgvector` to retrieve relevant legal documents (IIO format) before answering, ensuring high accuracy.
 *   **Real-Time Streaming:** Instant token-by-token responses via WebSockets.
@@ -49,11 +49,11 @@ graph TD
     end
     
     subgraph Database ["Data Layer"]
-        PG[("PostgreSQL + pgvector<br/>(User Data & Embeddings)")]:::db
+        PG[("PostgreSQL + FAISS<br/>(User Data & Embeddings)")]:::db
     end
     
     subgraph AI ["AI Engine"]
-        LLM["Mistral Nemo 12B<br/>(4-bit QLoRA)"]:::ai
+        LLM["Mistral 7B Instruct<br/>(4-bit QLoRA)"]:::ai
     end
 
     %% -- Flows --
@@ -76,8 +76,8 @@ graph TD
 | :--- | :--- | :--- |
 | **Frontend** | React.js | Vite, Tailwind CSS, TanStack Query |
 | **Backend** | FastAPI | Python Async, Pydantic, Uvicorn |
-| **Database** | PostgreSQL | `pgvector` extension for Vectors & JSONB |
-| **AI Model** | Mistral Nemo 12B | 4-bit QLoRA quantization, Unsloth |
+| **Database** | PostgreSQL | FAISS for Vector Database |
+| **AI Model** | Mistral 7B Instruct | 4-bit QLoRA quantization |
 | **Auth** | OAuth 2.0 | Google Sign-In + JWT |
 ---
 
@@ -110,7 +110,8 @@ Follow these instructions to set up the project locally.
 ### Prerequisites
 *   Python 3.10+
 *   Node.js & npm
-*   PostgreSQL (with pgvector installed)
+*   PostgreSQL
+*   FAISS
 
 ### 1. Backend Setup (FastAPI)
 
