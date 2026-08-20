@@ -5,7 +5,7 @@
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB)
 ![React](https://img.shields.io/badge/Frontend-React-61DAFB)
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688)
-![AI](https://img.shields.io/badge/Model-Mistral%20Nemo%2012B-purple)
+![AI](https://img.shields.io/badge/Model-Mistral%20Instruct%207B-purple)
 
 **LegalGPT Nepal** is an AI-powered legal advisory system designed to democratize access to legal information for Nepalese citizens. Developed as a **Final Year Computer Engineering Project**, it utilizes Retrieval-Augmented Generation (RAG) to provide accurate, context-aware answers based on the Constitution and Laws of Nepal.
 
@@ -15,7 +15,7 @@
 
 *   **AI Legal Assistant:** Powered by a fine-tuned **Mistral 7B Instruct** model to answer legal queries.
 *   **High-Performance Backend:** Built with **FastAPI** for native asynchronous processing and high-speed WebSocket streaming.
-*   **RAG Architecture:** Uses `pgvector` to retrieve relevant legal documents (IIO format) before answering, ensuring high accuracy.
+*   **RAG Architecture:** Uses `FAISS` to retrieve relevant legal clauses before answering, ensuring high accuracy.
 *   **Real-Time Streaming:** Instant token-by-token responses via WebSockets.
 *   **Secure Authentication:** Google OAuth 2.0 integration with JWT session management.
 *   **Citations:** Every AI response includes references to the specific articles or legal documents used.
